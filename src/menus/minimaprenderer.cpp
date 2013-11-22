@@ -305,12 +305,14 @@ void GamePlayMinimapRenderer::centerOn(uint16 tileX, uint16 tileY, int offX, int
 void GamePlayMinimapRenderer::handleGameEvent(GameEvent evt) {
     switch (evt.type) {
     case GameEvent::kObjEvacuate:
-        handleEvacuationSet();
+        handleEvacuationSet(evt);
         break;
     case GameEvent::kObjTargetSet:
-        handleTargetSet();
+        handleTargetSet(evt);
         break;
-    case GameEvent::kObjTargetCleared:
+    case GameEvent::kObjCompleted:
+    case GameEvent::kObjFailed:
+        p_minimap_->clearTarget();
         handleClearSignal();
         break;
     default:
@@ -319,9 +321,12 @@ void GamePlayMinimapRenderer::handleGameEvent(GameEvent evt) {
     }
 }
 
-void GamePlayMinimapRenderer::handleEvacuationSet() {
+void GamePlayMinimapRenderer::handleEvacuationSet(GameEvent &evt) {
     handleClearSignal();
-    p_minimap_->evacuationPoint(signalSourceXYZ_);
+    toDefineXYZ * p_point = static_cast<toDefineXYZ *>(evt.pCtxt);
+    signalSourceXYZ_.x = p_point->x;
+    signalSourceXYZ_.y = p_point->y;
+    signalSourceXYZ_.z = p_point->z;
    
     signalType_ = kEvacuation;
 
@@ -347,10 +352,12 @@ void GamePlayMinimapRenderer::handleClearSignal() {
 /*!
  * Defines a signal position on the map.
  */
-void GamePlayMinimapRenderer::handleTargetSet() {
+void GamePlayMinimapRenderer::handleTargetSet(GameEvent &evt) {
     handleClearSignal();
     // get the target current position
-    p_minimap_->target()->convertPosToXYZ(&signalSourceXYZ_);
+    MapObject *p_target = static_cast<MapObject *>(evt.pCtxt);
+    p_minimap_->setTarget(p_target);
+    p_target->convertPosToXYZ(&signalSourceXYZ_);
     signalType_ = kTarget;
 }
 
@@ -470,7 +477,7 @@ void GamePlayMinimapRenderer::render(uint16 screen_x, uint16 screen_y) {
     // draw all visible elements on the minimap
     drawPedestrians(minimap_layer);
     drawWeapons(minimap_layer);
-    drawCars(minimap_layer);
+    drawVehicles(minimap_layer);
 
     if (signalType_ != kNone) {
         int signal_px = signalXYZToMiniMapX();
@@ -490,28 +497,28 @@ void GamePlayMinimapRenderer::render(uint16 screen_x, uint16 screen_y) {
     g_Screen.blit(screen_x, screen_y, kMiniMapSizePx, kMiniMapSizePx, minimap_final_layer);
 }
 
-void GamePlayMinimapRenderer::drawCars(uint8 *a_minimap) {
-    for (int i = 0; i < p_mission_->numVehicles(); i++) {
-        VehicleInstance *p_vehicle = p_mission_->vehicle(i);
+void GamePlayMinimapRenderer::drawVehicles(uint8 *a_minimap) {
+    for (size_t i = 0; i < p_mission_->numVehicles(); i++) {
+        Vehicle *p_vehicle = p_mission_->vehicle(i);
         int tx = p_vehicle->tileX();
         int ty = p_vehicle->tileY();
 
         if (isVisible(tx, ty)) {
-            // vehicle is on minimap and is not driven by one of our agent.
-            // if a car is driven by our agent we only draw the yellow
-            // circle for the driver
-            PedInstance *p_ped = p_vehicle->getDriver();
-            if (p_ped == NULL || !p_ped->isOurAgent()) {
+            // vehicle is on minimap and must be drawn.
+            // if a vehicle contains at least one of our agent 
+            // we only draw the yellow circle representing the agent
+            if (p_vehicle->containsOurAgents()) {
+                int px = mapToMiniMapX(tx + 1, p_vehicle->offX());
+                int py = mapToMiniMapY(ty + 1, p_vehicle->offY());
+                uint8 borderColor = (mm_timer_ped.state()) ? fs_cmn::kColorBlack : fs_cmn::kColorLightGreen;
+                drawPedCircle(a_minimap, px, py, fs_cmn::kColorYellow, borderColor);
+
+            } else {
                 size_t vehicle_size = (zoom_ == ZOOM_X1) ? 2 : 4;
                 int px = mapToMiniMapX(tx + 1, p_vehicle->offX()) - vehicle_size / 2;
                 int py = mapToMiniMapY(ty + 1, p_vehicle->offY()) - vehicle_size / 2;
 
                 drawFillRect(a_minimap, px, py, vehicle_size, vehicle_size, fs_cmn::kColorWhite);
-            } else {
-                int px = mapToMiniMapX(tx + 1, p_vehicle->offX());
-                int py = mapToMiniMapY(ty + 1, p_vehicle->offY());
-                uint8 borderColor = (mm_timer_ped.state()) ? fs_cmn::kColorBlack : fs_cmn::kColorLightGreen;
-                drawPedCircle(a_minimap, px, py, fs_cmn::kColorYellow, borderColor);
             }
         }
     }
@@ -519,7 +526,7 @@ void GamePlayMinimapRenderer::drawCars(uint8 *a_minimap) {
 
 void GamePlayMinimapRenderer::drawWeapons(uint8 * a_minimap) {
     const size_t weapon_size = 2;
-    for (int i = 0; i < p_mission_->numWeapons(); i++)
+    for (size_t i = 0; i < p_mission_->numWeapons(); i++)
     {
         WeaponInstance * w = p_mission_->weapon(i);
         // we draw weapons that have no owner ie that are on the ground
@@ -544,7 +551,7 @@ void GamePlayMinimapRenderer::drawWeapons(uint8 * a_minimap) {
 }
 
 void GamePlayMinimapRenderer::drawPedestrians(uint8 * a_minimap) {
-    for (int i = 0; i < p_mission_->numPeds(); i++)
+    for (size_t i = 0; i < p_mission_->numPeds(); i++)
     {
         PedInstance *p_ped = p_mission_->ped(i);
         // we are not showing dead or peds inside vehicle
@@ -587,6 +594,7 @@ void GamePlayMinimapRenderer::drawPedestrians(uint8 * a_minimap) {
                 {
                     if (p_ped->isOurAgent())
                     {
+                        // TODO : do not draw agent if he is in a vehicle
                         // col_Yellow circle with a black or lightgreen border (blinking)
                         uint8 borderColor = (mm_timer_ped.state()) ? fs_cmn::kColorBlack : fs_cmn::kColorLightGreen;
                         drawPedCircle(a_minimap, px, py, fs_cmn::kColorYellow, borderColor);

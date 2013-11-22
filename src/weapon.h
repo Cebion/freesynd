@@ -32,6 +32,7 @@
 #include <vector>
 #include "mapobject.h"
 #include "sound/sound.h"
+#include "utils/configfile.h"
 
 class WeaponInstance;
 
@@ -42,7 +43,7 @@ class Weapon {
 public:
 
     WeaponInstance *createInstance();
-    typedef enum {
+    enum WeaponType {
         Unknown = 0,
         Pistol = 1,
         GaussGun = 2,
@@ -58,7 +59,7 @@ public:
         AccessCard = 12,
         EnergyShield = 13,
         Persuadatron = 14
-    } WeaponType;
+    };
 
     typedef enum {
         Unarmed_Anim,
@@ -73,16 +74,7 @@ public:
         Shotgun_Anim
     } WeaponAnimIndex;
 
-    Weapon(const std::string& w_name, int smallIcon, int bigIcon, int w_cost,
-            int w_ammo, int w_range, int w_shot, int w_rank, int w_anim,
-            WeaponAnimIndex w_idx, snd::InGameSample w_sample,
-            WeaponType w_type, MapObject::DamageType w_dmg_type,
-            int w_ammo_per_shot, int w_time_for_shot, int w_time_reload,
-            unsigned int w_shot_property, int w_hit_anim, int w_obj_hit_anim,
-            int w_rd_anim, int w_trace_anim, int w_range_dmg,
-            double w_shot_angle, double w_shot_accuracy, int w_shot_speed = 0,
-            int w_dmg_per_shot = 1, int w_shots_per_ammo = 1,
-            int w_weight = 1);
+    Weapon(WeaponType w_type, ConfigFile &conf);
 
     const char *getName() { return name_.c_str(); }
 
@@ -220,11 +212,22 @@ public:
     int ammoCost() { return ammo_cost_; }
     int shotSpeed() { return shot_speed_; }
     int shotsPerAmmo() { return shots_per_ammo_; }
+    bool usesAmmo() {
+        return (shotProperty() & Weapon::spe_UsesAmmo) != 0;
+    }
+
+protected:
+    //! Init weapon from given config file
+    void initFromConfig(WeaponType w_type, ConfigFile &conf);
 
 protected:
     std::string name_;
     int small_icon_, big_icon_;
-    int cost_, ammo_cost_, ammo_, range_, dmg_per_shot_;
+    /*! The price of this weapon.*/
+    int cost_;
+    /*! The price to reload the weapon.*/
+    int ammo_cost_;
+    int ammo_, range_, dmg_per_shot_;
     int anim_;
     int rank_;  //!> weapon rank
     WeaponType type_;
@@ -250,10 +253,20 @@ protected:
     int shot_speed_;
     //! shotgun only for now
     int shots_per_ammo_;
+    //! The weight of a weapon influences the agent's speed
     int weight_;
 };
 
+class PedInstance;
+
 class ShotClass {
+public:
+    static void rangeDamageAnim(toDefineXYZ &cp, double dmg_rng,
+        int rngdamg_anim);
+    static void createExplosion(ShootableMapObject *tobj, double dmg_rng, int dmg_value = 16, bool is_suicide = false);
+    //! This method is used for an agent to shoot himself
+    static void make_self_shot(PedInstance *p_ped);
+
 public:
     ShotClass(ShootableMapObject *tobj = NULL) : owner_(NULL),
         target_object_(tobj){}
@@ -266,14 +279,12 @@ public:
 
     void shotTargetRandomizer(toDefineXYZ * cp, toDefineXYZ * tp, double angle,
         double dist_new = -1, bool exclude_z = false);
-    void rangeDamageAnim(toDefineXYZ &cp, double dmg_rng,
-        int rngdamg_anim);
-    void createExplosion(ShootableMapObject *tobj, double dmg_rng, int dmg_value = 16);
 
 protected:
     void makeShot(bool rangeChecked, toDefineXYZ &cp, int anim_hit,
         std::vector <Weapon::ShotDesc> &all_shots, int anim_obj_hit,
         WeaponInstance *w = NULL);
+
 protected:
     ShootableMapObject *owner_;
     ShootableMapObject *target_object_;

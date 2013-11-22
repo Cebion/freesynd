@@ -27,6 +27,7 @@
 #include <assert.h>
 
 #include "tile.h"
+#include "gfx/screen.h"
 
 
 Tile::Tile(uint8 id_set, uint8 *tile_Data, bool not_alpha, EType type_set)
@@ -74,4 +75,9 @@ bool Tile::drawTo(uint8 * screen, int swidth, int sheight, int x, int y)
         }
     }
     return true;
+}
+
+bool Tile::drawToScreen(int x, int y)
+{
+    return drawTo((uint8*) g_Screen.pixels(), g_Screen.gameScreenWidth(), g_Screen.gameScreenHeight(), x, y);
 }

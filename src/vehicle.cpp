@@ -7,6 +7,7 @@
  *   Copyright (C) 2006  Trent Waddington <qg@biodome.org>              *
  *   Copyright (C) 2006  Tarjei Knapstad <tarjei.knapstad@gmail.com>    *
  *   Copyright (C) 2010  Bohdan Stelmakh <chamel@users.sourceforge.net> *
+ *   Copyright (C) 2013  Benoit Blancard <benblan@users.sourceforge.net>*
  *                                                                      *
  *    This program is free software;  you can redistribute it and / or  *
  *  modify it  under the  terms of the  GNU General  Public License as  *
@@ -57,8 +58,57 @@ void VehicleAnimation::set_base_anims(int anims) {
     anims_burnt_ = anims + 12;
 }
 
-VehicleInstance::VehicleInstance(VehicleAnimation * vehicle,
-int m):ShootableMovableMapObject(m), vehicle_(vehicle), vehicle_driver_(NULL)
+void Vehicle::addPassenger(PedInstance *p) {
+    passengers_.insert(p);
+}
+
+/*!
+ * Removes given passenger from vehicle.
+ * \param pPed Ped to remove
+ */
+void Vehicle::dropPassenger(PedInstance *pPed) {
+    if(isInsideVehicle(pPed)) {
+        pPed->leaveVehicle();
+        passengers_.erase(passengers_.find(pPed));
+        pPed->setPosition(tile_x_, tile_y_, tile_z_,
+        off_x_, off_y_, off_z_);
+    }
+}
+
+/*!
+ * Returns true if at least one of our agent is inside the vehicle.
+ */
+bool Vehicle::containsOurAgents() {
+    for (std::set<PedInstance *>::iterator it = passengers_.begin();
+        it != passengers_.end(); it++)
+    {
+        if ((*it)->isOurAgent()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/*!
+ * Returns true if the vehicle contains peds considered hostile by the given ped.
+ * \param pPed The ped evaluating the hostility of the vehicle
+ * \param hostile_desc_alt Parameter for evaluating the hostility
+ * \return True if at least one hostile ped is found.
+ */
+bool Vehicle::containsHostilesForPed(PedInstance* p,
+                                          unsigned int hostile_desc_alt)
+{
+    for (std::set<PedInstance *>::iterator it = passengers_.begin();
+        it != passengers_.end(); it++)
+    {
+        if (p->isHostileTo((ShootableMapObject *)(*it), hostile_desc_alt))
+            return true;
+    }
+    return false;
+}
+
+VehicleInstance::VehicleInstance(VehicleAnimation * vehicle, int m):
+    Vehicle(m, true), vehicle_(vehicle), vehicle_driver_(NULL)
 {
     hold_on_.wayFree = 0;
     rcv_damage_def_ = MapObject::ddmg_Vehicle;
@@ -340,8 +390,20 @@ bool VehicleInstance::dirWalkable(PathNode *p, int x, int y, int z) {
     return false;
 }
 
-void VehicleInstance::setDestinationV(Mission *m, int x, int y, int z, int ox,
-                                       int oy, int new_speed)
+/*!
+ * Sets a destination point for the vehicle to reach at given speed.
+ * \param m
+ * \param node destination point
+ * \param newSpeed Speed of movement
+ * \return true if destination has been set correctly.
+ */
+bool VehicleInstance::setDestination(Mission *m, PathNode &node, int newSpeed) {
+    speed_ = newSpeed;
+    setDestinationV(node.tileX(), node.tileY(), node.tileZ(), node.offX(), node.offY(), newSpeed);
+    return !dest_path_.empty();
+}
+
+void VehicleInstance::setDestinationV(int x, int y, int z, int ox, int oy, int new_speed)
 {
     std::map < PathNode, uint16 > open;
     std::set < PathNode > closed;
@@ -349,8 +411,9 @@ void VehicleInstance::setDestinationV(Mission *m, int x, int y, int z, int ox,
     int basex = tile_x_, basey = tile_y_;
     std::vector < PathNode > path2add;
     path2add.reserve(16);
+    Map *pMap = g_App.maps().map(map_);
 
-    m->adjXYZ(x, y, z);
+    pMap->adjXYZ(x, y, z);
     // NOTE: we will be using lower tiles, later will restore Z coord
     z = tile_z_ - 1;
 
@@ -378,7 +441,7 @@ void VehicleInstance::setDestinationV(Mission *m, int x, int y, int z, int ox,
         // we got somewhere we shouldn't, we need to find somewhere that is walkable
         PathNode pntile(tile_x_ , tile_y_, z, off_x_, off_y_);
         for (int i = 1; i < 16; i++) {
-            if (tile_x_ + i >= m->mmax_x_)
+            if (tile_x_ + i >= pMap->maxX())
                 break;
             pntile.setTileX(tile_x_ + i);
             path2wtile.push_back(pntile);
@@ -435,7 +498,7 @@ void VehicleInstance::setDestinationV(Mission *m, int x, int y, int z, int ox,
         path2wtile.clear();
         pntile = PathNode(tile_x_ , tile_y_, z, off_x_, off_y_);
         for (int i = 1; i < 16; i++) {
-            if (tile_y_ + i >= m->mmax_y_)
+            if (tile_y_ + i >= pMap->maxY())
                 break;
             pntile.setTileY(tile_y_ + i);
             path2wtile.push_back(pntile);
@@ -639,7 +702,7 @@ bool VehicleInstance::move_vehicle(int elapsed)
             return updated;
         } else if (hold_on_.wayFree == 2){
             // Must stop : clear destination and stop
-            resetDest_Speed();
+            clearDestination();
             return updated;
         }
 
@@ -724,9 +787,9 @@ bool VehicleInstance::move_vehicle(int elapsed)
                speed_);
         speed_ = 0;
     }
-    if (!all_passengers_.empty()) {
-        for (std::set<PedInstance *>::iterator it = all_passengers_.begin();
-            it != all_passengers_.end(); it++
+    if (!passengers_.empty()) {
+        for (std::set<PedInstance *>::iterator it = passengers_.begin();
+            it != passengers_.end(); it++
         ) {
             (*it)->setPosition(tile_x_, tile_y_, tile_z_, off_x_, off_y_, off_z_);
         }
@@ -741,7 +804,6 @@ bool VehicleInstance::handleDamage(ShootableMapObject::DamageInflictType *d) {
         return false;
     health_ -= d->dvalue;
     if (health_ <= 0) {
-        speed_ = 0;
         health_ = 0;
         is_ignored_ = true;
         clearDestination();
@@ -755,11 +817,10 @@ bool VehicleInstance::handleDamage(ShootableMapObject::DamageInflictType *d) {
                 break;
         }
         vehicle_driver_ = NULL;
-        while (all_passengers_.size() != 0)
+        while (passengers_.size() != 0)
         {
-            PedInstance *p = *(all_passengers_.begin());
-            p->leaveVehicle();
-            removeDriver(p);
+            PedInstance *p = *(passengers_.begin());
+            dropPassenger(p);
         }
         ShotClass explosion;
         explosion.createExplosion(this, 512.0);
@@ -769,27 +830,46 @@ bool VehicleInstance::handleDamage(ShootableMapObject::DamageInflictType *d) {
     return true;
 }
 
-void VehicleInstance::removeDriver(PedInstance* vehicleDriver) {
-    if (vehicle_driver_ == vehicleDriver) {
+/*!
+ * Adds the given ped to the passenger but if the vehicle
+ * has no driver, ped becomes the driver.
+ * \param p The ped
+ */
+void VehicleInstance::addPassenger(PedInstance *p) {
+    Vehicle::addPassenger(p);
+    if (hasDriver()) {
+        // There's already a driver
+        p->putInVehicle(this, PedInstance::pa_smInCar);
+    } else {
+        // Ped becomes the driver
+        vehicle_driver_ = p;
+        p->putInVehicle(this, PedInstance::pa_smUsingCar);
+    }
+}
+
+/*!
+ * Overload initial method to manage driver.
+ * \param pPed The ped to remove.
+ */
+void VehicleInstance::dropPassenger(PedInstance *pPed) {
+    Vehicle::dropPassenger(pPed);
+    if (vehicle_driver_ == pPed) {
         vehicle_driver_ = NULL;
         clearDestination();
-        setSpeed(0);
+
+        // find another driver in the remaining passengers
+        for (std::set<PedInstance *>::iterator it = passengers_.begin();
+            it != passengers_.end(); it++) {
+            // take the first one
+            vehicle_driver_ = *it;
+            break;
+        }
     }
-    all_passengers_.erase(all_passengers_.find(vehicleDriver));
-    ((MapObject *)vehicleDriver)->setPosition(tile_x_, tile_y_, tile_z_,
-        off_x_, off_y_, off_z_);
 }
 
-bool VehicleInstance::checkHostilesInside(PedInstance* p,
-                                          unsigned int hostile_desc_alt)
-{
-    for (std::set<PedInstance *>::iterator it = all_passengers_.begin();
-        it != all_passengers_.end(); it++)
-    {
-        if (p->checkHostileIs((ShootableMapObject *)(*it), hostile_desc_alt))
-            return true;
+void VehicleInstance::forceSetDriver(PedInstance *vehicleDriver) {
+    vehicle_driver_ = vehicleDriver;
+    if (!isInsideVehicle(vehicleDriver)) {
+        Vehicle::addPassenger(vehicleDriver);
     }
-    return false;
 }
-
-

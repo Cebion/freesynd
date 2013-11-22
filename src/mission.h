@@ -38,7 +38,7 @@
 #include "model/leveldata.h"
 #include "core/gameevent.h"
 
-class VehicleInstance;
+class Vehicle;
 class PedInstance;
 class Agent;
 class ObjectiveDesc;
@@ -75,7 +75,7 @@ typedef struct {
 /*!
  * Contains information read from original mission data file.
  */
-class Mission : public MapHelper {
+class Mission {
 public:
     /*!
      * List of all possible mission status. 
@@ -115,42 +115,34 @@ public:
     int maxX() { return max_x_; }
     int maxY() { return max_y_; }
 
-    void drawMap(int scrollx, int scrolly);
-
-    //--- MapHelper stuff
-    virtual void drawAt(int tilex, int tiley, int tilez, int x, int y);
-    virtual void createFastKeys(int tilex, int tiley,
-        int maxtilex, int maxtiley);
-    //---
-
     void objectiveMsg(std::string& msg);
 
-    int numPeds() { return (int) peds_.size(); }
-    PedInstance *ped(int i) { return peds_[i]; }
+    size_t numPeds() { return peds_.size(); }
+    PedInstance *ped(size_t i) { return peds_[i]; }
     void addPed(PedInstance *p) { peds_.push_back(p); }
 
-    int numVehicles() { return (int) vehicles_.size(); }
-    VehicleInstance *vehicle(int i) { return vehicles_[i]; }
-    void addVehicle(VehicleInstance *pVehicle) { vehicles_.push_back(pVehicle); }
+    size_t numVehicles() { return vehicles_.size(); }
+    Vehicle *vehicle(size_t i) { return vehicles_[i]; }
+    void addVehicle(Vehicle *pVehicle) { vehicles_.push_back(pVehicle); }
 
-    int numWeapons() { return (int) weapons_.size(); }
-    WeaponInstance *weapon(int i) { return weapons_[i]; }
+    size_t numWeapons() { return weapons_.size(); }
+    WeaponInstance *weapon(size_t i) { return weapons_[i]; }
     void addWeapon(WeaponInstance *w);
 
-    int numStatics() { return (int) statics_.size(); }
-    Static *statics(int i) { return statics_[i]; }
+    size_t numStatics() { return statics_.size(); }
+    Static *statics(size_t i) { return statics_[i]; }
     void addStatic(Static *pStatic) { statics_.push_back(pStatic); }
 
-    int numSfxObjects() { return (int) sfx_objects_.size(); }
-    SFXObject *sfxObjects(int i) { return sfx_objects_[i]; }
+    size_t numSfxObjects() { return sfx_objects_.size(); }
+    SFXObject *sfxObjects(size_t i) { return sfx_objects_[i]; }
 
-    int numPrjShots() { return (int) prj_shots_.size(); }
-    ProjectileShot *prjShots(int i) { return prj_shots_[i]; }
+    size_t numPrjShots() { return prj_shots_.size(); }
+    ProjectileShot *prjShots(size_t i) { return prj_shots_[i]; }
 
     void addSfxObject(SFXObject *so) {
         sfx_objects_.push_back(so);
     }
-    void delSfxObject(int i) {
+    void delSfxObject(size_t i) {
         delete sfx_objects_[i];
         sfx_objects_.erase((sfx_objects_.begin() + i));
     }
@@ -158,7 +150,7 @@ public:
     void addPrjShot(ProjectileShot *prj) {
         prj_shots_.push_back(prj);
     }
-    void delPrjShot(int i) {
+    void delPrjShot(size_t i) {
         delete prj_shots_[i];
         prj_shots_.erase((prj_shots_.begin() + i));
     }
@@ -194,7 +186,8 @@ public:
     bool getShootableTile(int &x, int &y, int &z, int &ox, int &oy, int &oz);
     bool isTileSolid(int x, int y, int z, int ox, int oy, int oz);
 
-    void adjXYZ(int &x, int &y, int &z);
+    //! TODO remove method
+    void adjXYZ(int &x, int &y, int &z) { p_map_->adjXYZ(x, y, z); }
 
     void blockerExists(toDefineXYZ * startXYZ, toDefineXYZ * endXYZ,
         double *dist, MapObject** blockerObj);
@@ -229,24 +222,15 @@ protected:
     bool isSurface(char thisTile);
     bool isStairs(char thisTile);
 
-    //! If the current objective has generated an event -> dispatch it
-    void handleObjectiveEvent(GameEvent & evt, ObjectiveDesc *pObj);
-    //! Sends an event to all listeners
-    void fireGameEvent(GameEvent &evt);
 protected:
     
-    // eventually all this level data will be replaced by objects like this:
-    std::vector<VehicleInstance *> vehicles_;
+    /*! List of all vehicles, cars and train.*/
+    std::vector<Vehicle *> vehicles_;
     std::vector<PedInstance *> peds_;
     std::vector<WeaponInstance *> weapons_;
     std::vector<Static *> statics_;
     std::vector<SFXObject *> sfx_objects_;
     std::vector<ProjectileShot *> prj_shots_;
-    std::vector<VehicleInstance *> cache_vehicles_;
-    std::vector<PedInstance *> cache_peds_;
-    std::vector<WeaponInstance *> cache_weapons_;
-    std::vector<Static *> cache_statics_;
-    std::vector<SFXObject *> cache_sfx_objects_;
 
     std::vector <ObjectiveDesc *> objectives_;
     //std::vector <ObjectiveDesc> sub_objectives_;
@@ -269,8 +253,6 @@ protected:
      */
     Map *p_map_;
 
-    std::set<int> fast_vehicle_cache_, fast_ped_cache_, fast_weapon_cache_,
-            fast_statics_cache_, fast_sfx_objects_cache_;
     /*! Statistics : time, shots, ...*/
     MissionStats stats_;
     // minimap in colours, map z = 0 tiles transformed based on

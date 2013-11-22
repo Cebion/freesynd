@@ -28,8 +28,12 @@
 #ifndef SELECTMENU_H
 #define SELECTMENU_H
 
+#include "menus/menu.h"
+
 class ListBox;
 class WeaponInstance;
+class Weapon;
+class Mod;
 
 /*!
  * Select Menu class.

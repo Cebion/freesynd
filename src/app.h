@@ -38,13 +38,9 @@
 #include "path.h"
 #include "menus/menumanager.h"
 #include "mapmanager.h"
-#include "mission.h"
-#include "missionmanager.h"
-#include "weaponmanager.h"
-#include "modmanager.h"
-#include "pedmanager.h"
 #include "sound/soundmanager.h"
 #include "sound/musicmanager.h"
+#include "appcontext.h"
 #include "core/gamesession.h"
 #include "core/gamecontroller.h"
 
@@ -73,24 +69,8 @@ class App : public Singleton < App > {
         return menus_;
     }
 
-    MissionManager &missions() {
-        return missions_;
-    }
-
-    WeaponManager &weapons() {
-        return weapons_;
-    }
-
-    ModManager &mods() {
-        return mods_;
-    }
-
     MapManager &maps() {
         return maps_;
-    }
-
-    PedManager &peds() {
-        return peds_;
     }
 
     SoundManager &introSounds() {
@@ -130,7 +110,6 @@ class App : public Singleton < App > {
 
     static std::string defaultIniFolder();
 
-    int32 getTimeForClick() { return time_for_click_; }
 #ifdef _DEBUG
 public:
     uint8 debug_breakpoint_trigger_;
@@ -165,14 +144,8 @@ private:
 
 private:
     bool running_;
-    /*! True means the game will run in fullscreen. */
-    bool fullscreen_;
-    /*! True means the intro will be played.*/
-    bool playIntro_;
-    /*! Time range between mouse up and down that is treated as click,
-     * if it will be longer it will be treated as dragging
-    */
-    int32 time_for_click_;
+    /*! A structure to hold general application informations.*/
+    std::auto_ptr<AppContext> context_;
     /*! A structure to hold player informations.*/
     std::auto_ptr<GameSession> session_;
     /*! Controls the game logic. */
@@ -184,11 +157,7 @@ private:
 
     GameSpriteManager game_sprites_;
     MenuManager menus_;
-    MissionManager missions_;
-    WeaponManager weapons_;
-    ModManager mods_;
     MapManager maps_;
-    PedManager peds_;
     SoundManager intro_sounds_;
     SoundManager game_sounds_;
     MusicManager music_;

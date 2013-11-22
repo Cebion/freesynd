@@ -30,6 +30,7 @@
 #include <assert.h>
 #include "app.h"
 #include "gameplaymenu.h"
+#include "menus/gamemenuid.h"
 #include "gfx/fliplayer.h"
 #include "utils/file.h"
 #include "vehicle.h"
@@ -48,7 +49,7 @@ const int GameplayMenu::kMiniMapScreenY = 46 + 44 + 10 + 46 + 44 + 15 + 2 * 32 +
 //#define ANIM_PLUS_FRAME_VIEW
 
 GameplayMenu::GameplayMenu(MenuManager *m) :
-Menu(m, MENU_GAMEPLAY, MENU_DEBRIEF, "", "mscrenup.dat"),
+Menu(m, fs_game_menus::kMenuIdGameplay, fs_game_menus::kMenuIdDebrief, "", "mscrenup.dat"),
 tick_count_(0), last_animate_tick_(0), last_motion_tick_(0),
 last_motion_x_(320), last_motion_y_(240), mission_hint_ticks_(0), 
 mission_hint_(0), mission_(NULL), world_x_(0),
@@ -295,7 +296,8 @@ void GameplayMenu::handleShow() {
 
     updtAgentsMarker();
 
-    // Reset the minimap
+    // Init renderers
+    map_renderer_.init(mission_);
     mm_renderer_.init(mission_, mission_->getSquad()->hasScanner());
     centerMinimapOnLeader();
 
@@ -342,7 +344,7 @@ void GameplayMenu::handleTick(int elapsed)
         int diff = tick_count_ - last_animate_tick_;
         last_animate_tick_ = tick_count_;
 
-        for (int i = 0; i < mission_->numSfxObjects(); i++) {
+        for (size_t i = 0; i < mission_->numSfxObjects(); i++) {
             change |= mission_->sfxObjects(i)->animate(diff);
             if (mission_->sfxObjects(i)->sfxLifeOver()) {
                 mission_->delSfxObject(i);
@@ -350,19 +352,19 @@ void GameplayMenu::handleTick(int elapsed)
             }
         }
 
-        for (int i = 0; i < mission_->numPeds(); i++)
+        for (size_t i = 0; i < mission_->numPeds(); i++)
             change |= mission_->ped(i)->animate(diff, mission_);
 
-        for (int i = 0; i < mission_->numVehicles(); i++)
+        for (size_t i = 0; i < mission_->numVehicles(); i++)
             change |= mission_->vehicle(i)->animate(diff);
 
-        for (int i = 0; i < mission_->numWeapons(); i++)
+        for (size_t i = 0; i < mission_->numWeapons(); i++)
             change |= mission_->weapon(i)->animate(diff);
 
-        for (int i = 0; i < mission_->numStatics(); i++)
+        for (size_t i = 0; i < mission_->numStatics(); i++)
             change |= mission_->statics(i)->animate(diff, mission_);
 
-        for (int i = 0; i < mission_->numPrjShots(); i++) {
+        for (size_t i = 0; i < mission_->numPrjShots(); i++) {
             change |= mission_->prjShots(i)->animate(diff, mission_);
             if (mission_->prjShots(i)->prjsLifeOver()) {
                 mission_->delPrjShot(i);
@@ -387,7 +389,7 @@ void GameplayMenu::handleTick(int elapsed)
 void GameplayMenu::handleRender(DirtyList &dirtyList)
 {
     g_Screen.clear(0);
-    mission_->drawMap(world_x_, world_y_);
+    map_renderer_.render(world_x_, world_y_, &selection_);
     g_Screen.drawRect(0,0, 129, GAME_SCREEN_HEIGHT);
     agt_sel_renderer_.render(selection_, mission_->getSquad());
     drawSelectAllButton();
@@ -395,14 +397,7 @@ void GameplayMenu::handleRender(DirtyList &dirtyList)
     drawWeaponSelectors();
     mm_renderer_.render(kMiniMapScreenX, kMiniMapScreenY);
 
-#ifdef _DEBUG
-    if (g_System.getKeyModState() & KMD_LALT) {
-        for (SquadSelection::Iterator it = selection_.begin();
-            it != selection_.end(); ++it) {
-            (*it)->showPath(world_x_, world_y_);
-        }
-    }
-    
+#ifdef _DEBUG    
     // drawing of different sprites
 //    g_App.gameSprites().sprite(9 * 40 + 1)->draw(0, 0, 0, false, true);
 #if 0
@@ -533,9 +528,9 @@ void GameplayMenu::handleMouseMotion(int x, int y, int state, const int modKeys)
 
     if (x > 128) {
 #ifdef _DEBUG
-        for (int i = 0; mission_ && i < mission_->numPeds(); ++i) {
+        for (size_t i = 0; mission_ && i < mission_->numPeds(); ++i) {
 #else
-        for (int i = mission_->getSquad()->size(); mission_ && i < mission_->numPeds(); ++i) {
+        for (size_t i = mission_->getSquad()->size(); mission_ && i < mission_->numPeds(); ++i) {
 #endif
             PedInstance *p = mission_->ped(i);
             if (p->isAlive() && p->map() != -1) {
@@ -562,8 +557,8 @@ void GameplayMenu::handleMouseMotion(int x, int y, int state, const int modKeys)
             }
         }
 
-        for (int i = 0; mission_ && i < mission_->numVehicles(); ++i) {
-            VehicleInstance *v = mission_->vehicle(i);
+        for (size_t i = 0; mission_ && i < mission_->numVehicles(); ++i) {
+            Vehicle *v = mission_->vehicle(i);
             if (v->isAlive()) {
                 int px = v->screenX() - 20;
                 int py = v->screenY() - 10 - v->tileZ() * TILE_HEIGHT/3;
@@ -587,7 +582,7 @@ void GameplayMenu::handleMouseMotion(int x, int y, int state, const int modKeys)
             }
         }
 
-        for (int i = 0; mission_ && i < mission_->numWeapons(); ++i) {
+        for (size_t i = 0; mission_ && i < mission_->numWeapons(); ++i) {
             WeaponInstance *w = mission_->weapon(i);
 
             if (w->map() != -1) {
@@ -634,17 +629,18 @@ void GameplayMenu::handleMouseMotion(int x, int y, int state, const int modKeys)
         }
 #endif
 #endif
-        if (target_->useTargetCursor() ) {
+        if (target_->majorType() == MapObject::mjt_Ped || 
+            target_->majorType() == MapObject::mjt_Vehicle) {
             if (inrange)
                 g_System.useTargetRedCursor();
             else
                 g_System.useTargetCursor();
-        } else if (target_->majorType() == MapObject::mjt_Weapon)
+        } else if (target_->majorType() == MapObject::mjt_Weapon) {
             g_System.usePickupCursor();
-    } else {
-        if (x > 128)
+        }
+    } else if (x > 128) {
             g_System.usePointerCursor();
-        else
+    } else {
             g_System.usePointerYellowCursor();
     }
 
@@ -755,58 +751,22 @@ bool GameplayMenu::handleMouseDown(int x, int y, int button, const int modKeys)
 void GameplayMenu::handleClickOnWeaponSelector(int x, int y, int button,
     const int modKeys)
 {
-    int w_num = ((y - (2 + 46 + 44 + 10 + 46 + 44 + 15)) / 32) * 4
+    uint8 w_num = ((y - (2 + 46 + 44 + 10 + 46 + 44 + 15)) / 32) * 4
             + x / 32;
-    bool weapon_is_selected = false;
-    PedInstance *pLeader = mission_->ped(selection_.getLeaderSlot());
+    PedInstance *pLeader = selection_.leader();
     if (pLeader->isAlive()) {
+        bool is_ctrl = (modKeys & KMD_CTRL) != 0;
         if (w_num < pLeader->numWeapons()) {
             if (button == 1) {
-                WeaponInstance *wi = pLeader->weapon(w_num);
-                bool deselect_curr = false;
-
-                if (pLeader->selectedWeapon() == wi)
-                    deselect_curr = true;
-
-                for (SquadSelection::Iterator it = selection_.begin();
-                     it != selection_.end(); ++it)
-                {
-                    PedInstance *ped = *it;
-                    if (deselect_curr)
-                        ped->setSelectedWeapon(-1);
-                    else {
-                        if (pLeader == ped) {
-                            pLeader->setSelectedWeapon(w_num);
-                        } else {
-                            WeaponInstance *pWI = ped->selectedWeapon();
-                            if ((pWI && pWI->getWeaponType() != wi->getWeaponType())
-                                 || !pWI)
-                            {
-                                PedInstance::pedWeaponToUse pw_to_use;
-                                pw_to_use.desc = 3;
-                                pw_to_use.wpn.wpn_type = wi->getWeaponType();
-                                ped->selectRequiredWeapon(&pw_to_use);
-                            }
-                        }
-                    }
-                    weapon_is_selected = true;
-                } // end for
+                // Button 1 : selection/deselection of weapon for all selection
+                handleWeaponSelection(w_num, is_ctrl);
             } else {
-                PedInstance::actionQueueGroupType as;
-                as.main_act = 0;
-                as.group_desc = PedInstance::gd_mExclusive;
-                as.origin_desc = fs_actions::kOrigUser;
-                pLeader->createActQPutDown(as, pLeader->weapon(w_num));
-                if (modKeys & KMD_CTRL)
-                    pLeader->addActQToQueue(as);
-                else
-                    pLeader->setActQInQueue(as);
+                // Button 3 : drop weapon from selected agent inventory
+                pLeader->addActionPutdown(w_num, is_ctrl);
             }
         }
     }
     // redraw weapon selector
-    if (weapon_is_selected)
-        g_App.gameSounds().play(snd::SPEECH_SELECTED);
     addDirtyRect(0, 207, 128, 64);
 }
 
@@ -840,91 +800,44 @@ void GameplayMenu::updateIPALevelMeters(int elapsed)
 }
 
 void GameplayMenu::handleClickOnMap(int x, int y, int button, const int modKeys) {
-    MapTilePoint mapPt_base = mission_->get_map()->screenToTilePoint(world_x_ + x - 129,
+    MapTilePoint mapPt = mission_->get_map()->screenToTilePoint(world_x_ + x - 129,
                     world_y_ + y);
 
-    if (button == 1) {
-        for (size_t i = 0; i < AgentManager::kMaxSlot; ++i) {
-            PedInstance *ped = mission_->getSquad()->member(i);
-            MapTilePoint mapPt(mapPt_base);
-            if (selection_.isAgentSelected(i)) {
-                PedInstance::actionQueueGroupType as;
-                bool action = false;
-                if (target_) {
-                    switch (target_->majorType()) {
-                        case MapObject::mjt_Ped:
-                            // TODO : Should we also follow a vehicle if it is
-                            // being driven / has a driver?
-                            ped->createActQFollowing(as, target_, 0, 192);
-                            action = true;
-                            break;
-                         case MapObject::mjt_Weapon:
-                            ped->createActQPickUp(as, target_);
-                            action = true;
-                            break;
-                         case MapObject::mjt_Vehicle:
-                            if (ped->inVehicle() == target_) {
-                                ped->createActQLeaveCar(as, target_);
-                                action = true;
-                            } else if (target_->isAlive())
-                            {
-                                ped->createActQGetInCar(as, target_);
-                                action = true;
-                            }
-                            break;
-                         default:
-                             break;
-                    }
-                } else if (ped->inVehicle()) {
-                    if (ped == ped->inVehicle()->getDriver())
-                    {
-                        int stx = mapPt.tx;
-                        int sty = mapPt.ty;
-                        //int sox = ox;
-                        //int soy = oy;
-                        stx = mapPt.tx * 256 + mapPt.ox + 128 * (ped->inVehicle()->tileZ() - 1);
-                        //sox = stx % 256;
-                        stx = stx / 256;
-                        sty = mapPt.ty * 256 + mapPt.oy + 128 * (ped->inVehicle()->tileZ() - 1);
-                        //soy = sty % 256;
-                        sty = sty / 256;
-                        PathNode tpn = PathNode(stx, sty, 0, 128, 128);
-                        ped->createActQUsingCar(as, &tpn, ped->inVehicle());
-                        action = true;
-                    }
-                }
-                
-                if (action) {
-                    as.main_act = as.actions.size() - 1;
-                    as.group_desc = PedInstance::gd_mStandWalk;
-                    as.origin_desc = fs_actions::kOrigUser;
-                    if (modKeys & KMD_CTRL)
-                        ped->addActQToQueue(as);
-                    else
-                        ped->setActQInQueue(as);
-                } else {
-                    bool isForGroup = selection_.size() > 1;
-                    bool addDestPt = (modKeys & KMD_CTRL) != 0;
-                    if (!mission_->getWalkable(mapPt))
-                        break;
-                    if (!setDestinationPoint(mapPt, isForGroup, addDestPt, i, ped)) {
-                        // could not set destination point -> we can stop
-                        // TODO: if one agent can't move there, all should stop?
-                        break;
-                    }
-                }
-            } // end of if selected
-        } // end of for
-    } else if (button == 3) {
-        // TODO: use directly mapPt_base?
-        MapTilePoint mapPt(mapPt_base);
-        PathNode *pn = NULL;
+    bool ctrl = (modKeys & KMD_CTRL) != 0;
+    if (button == kMouseLeftButton) {
+        if (target_) {
+            switch (target_->majorType()) {
+            case MapObject::mjt_Weapon:
+                selection_.pickupWeapon(dynamic_cast<WeaponInstance *>(target_), ctrl);
+                break;
+            case MapObject::mjt_Ped:
+                selection_.followPed(dynamic_cast<PedInstance *>(target_), ctrl);
+                break;
+            case MapObject::mjt_Vehicle:
+                selection_.enterOrLeaveVehicle(dynamic_cast<Vehicle *>(target_), ctrl);
+                break;
+            default:
+                break;
+            }
+        } else if (mission_->getWalkable(mapPt)) {
+            selection_.moveTo(mapPt, ctrl);
+        }
+    } else if (button == kMouseRightButton) {
+        PathNode pn;
+        bool doShoot = false;
         if (target_) {
             int tilez = target_->tileZ() * 128 + target_->offZ() + (target_->sizeZ() >> 1);
             int offz = tilez % 128;
             tilez /= 128;
-            pn = new PathNode(target_->tileX(), target_->tileY(), tilez,
-                target_->offX(), target_->offY(), offz);
+            //pn = new PathNode(target_->tileX(), target_->tileY(), tilez,
+            //    target_->offX(), target_->offY(), offz);
+            doShoot = true;
+            pn.setTileX(target_->tileX());
+            pn.setTileY(target_->tileY());
+            pn.setTileZ(tilez);
+            pn.setOffX(target_->offX());
+            pn.setOffY(target_->offY());
+            pn.setOffZ(offz);
         } else {
             int stx = mapPt.tx;
             int sty = mapPt.ty;
@@ -935,7 +848,14 @@ void GameplayMenu::handleClickOnMap(int x, int y, int button, const int modKeys)
             if (mission_->getShootableTile(stx, sty, stz,
                 sox, soy, oz))
             {
-                pn = new PathNode(stx, sty, stz, sox, soy, oz);
+                //pn = new PathNode(stx, sty, stz, sox, soy, oz);
+                doShoot = true;
+                pn.setTileX(stx);
+                pn.setTileY(sty);
+                pn.setTileZ(stz);
+                pn.setOffX(sox);
+                pn.setOffY(soy);
+                pn.setOffZ(oz);
 #if 0
                 printf("shooting at\n x = %i, y=%i, z=%i\n",
                         stx, sty, stz);
@@ -944,7 +864,11 @@ void GameplayMenu::handleClickOnMap(int x, int y, int button, const int modKeys)
 #endif
             }
         }
-        for (size_t i = 0; i < AgentManager::kMaxSlot; ++i) {
+
+        if (doShoot) {
+            selection_.shootAt(pn);
+        }
+        /*for (size_t i = 0; i < AgentManager::kMaxSlot; ++i) {
             if (selection_.isAgentSelected(i)) {
                 PedInstance * pa = mission_->getSquad()->member(i);
                 PedInstance::actionQueueGroupType as;
@@ -952,7 +876,7 @@ void GameplayMenu::handleClickOnMap(int x, int y, int button, const int modKeys)
                 as.group_desc = PedInstance::gd_mFire;
                 as.origin_desc = fs_actions::kOrigUser;
                 if (pn) {
-                    if (modKeys & KMD_CTRL) {
+                    if (ctrl) {
                         if (pa->createActQFiring(as, pn, NULL, true))
                             pa->addActQToQueue(as);
                     } else {
@@ -967,56 +891,27 @@ void GameplayMenu::handleClickOnMap(int x, int y, int button, const int modKeys)
             }
         }
         if (pn)
-            delete pn;
+            delete pn;*/
     }
 }
 
+/*!
+ * User has clicked on the minimap. All selected agent go to destination.
+ * Clicking on the minimap does not allow to shoot or to use objects.
+ * \param x minimap coordinate
+ * \param y minimap coordinate
+ */
 void GameplayMenu::handleClickOnMinimap(int x, int y) {
-    MapTilePoint pt_base = mm_renderer_.minimapToMapPoint(x - kMiniMapScreenX, y - kMiniMapScreenY);
-    for (size_t i = 0; i < AgentManager::kMaxSlot; ++i) {
-        MapTilePoint pt(pt_base);
-        if (selection_.isAgentSelected(i)) {
-            PedInstance *ped = mission_->getSquad()->member(i);
-            bool isForGroup = selection_.size() > 1;
-            pt.tz = ped->tileZ();
-            if (!(mission_->getWalkableClosestByZ(pt)
-                && setDestinationPoint(pt, isForGroup, false, i, ped)))
-            {
-                break;
-            }
-        }
-    }
-}
-
-bool GameplayMenu::setDestinationPoint(const MapTilePoint &mapPt, bool isForGroup, bool addDestPt, size_t agentNo, PedInstance *p_ped) {
-    
-    MapTilePoint tmpPt(mapPt);
-
-    if (isForGroup) {
-        //TODO: current group position is like
-        // in original this can make non-tile
-        // oriented
-        //int sox = (i % 2) * (i - 2) * 16;
-        //int soy = ((i + 1) % 2) * (i - 1) * 8;
-
-        //this should be romoved if non-tile
-        //position needed
-        tmpPt.ox = 63 + 128 * (agentNo % 2);
-        tmpPt.oy = 63 + 128 * (agentNo >> 1);
-    }
-
-    PedInstance::actionQueueGroupType as;
-    PathNode tpn = PathNode(tmpPt.tx, tmpPt.ty, tmpPt.tz, tmpPt.ox, tmpPt.oy, 0);
-    p_ped->createActQWalking(as, &tpn, NULL);
-    as.main_act = as.actions.size() - 1;
-    as.group_desc = PedInstance::gd_mStandWalk;
-    as.origin_desc = fs_actions::kOrigUser;
-    if (addDestPt)
-        p_ped->addActQToQueue(as);
-    else
-        p_ped->setActQInQueue(as);
-
-    return true;
+    // convert minimap coordinate in map coordinate
+    MapTilePoint pt = mm_renderer_.minimapToMapPoint(x - kMiniMapScreenX, y - kMiniMapScreenY);
+    // As minimap is flat, we can't see the height. So take the Z coordinate
+    // of the leader as a reference
+    pt.tz = selection_.leader()->tileZ();
+    if (mission_->getWalkableClosestByZ(pt))
+    {
+        // Destination is walkable so go
+        selection_.moveTo(pt, false);
+     }
 }
 
 void GameplayMenu::stopShootingEvent(void )
@@ -1045,16 +940,9 @@ void GameplayMenu::handleMouseUp(int x, int y, int button, const int modKeys)
     }
 }
 
-extern int topz;
-
 bool GameplayMenu::handleUnknownKey(Key key, const int modKeys) {
     bool change = false; /* indicator whether menu should be redrawn */
     bool consumed = true;
-
-    if (mission_ == NULL) {
-        // Mission must not be null
-        return false;
-    }
 
     // Pause/unpause game
     if (isLetterP(key.unicode)) {
@@ -1063,7 +951,7 @@ bool GameplayMenu::handleUnknownKey(Key key, const int modKeys) {
         } else {
             paused_ = true;
             // TODO: translate all paused texts
-            std::string str_paused = g_App.menus().getMessage("GAME_PAUSED");
+            std::string str_paused = getMessage("GAME_PAUSED");
             MenuFont *font_used = getMenuFont(FontManager::SIZE_1);
             int txt_width = font_used->textWidth(str_paused.c_str(), false);
             int txt_posx = g_Screen.gameScreenWidth() / 2 - txt_width / 2;
@@ -1086,18 +974,6 @@ bool GameplayMenu::handleUnknownKey(Key key, const int modKeys) {
         ctrl = true;
     }
 
-#ifdef _DEBUG
-    if (isLetterH(key.unicode)) {
-        mission_->endWithStatus(Mission::COMPLETED);
-        return true;
-    }
-
-    if (isLetterG(key.unicode)) {
-        mission_->endWithStatus(Mission::FAILED);
-        return true;
-    }
-#endif
-
     // SPACE is pressed when the mission failed or succeeded to return
     // to menu
     if (key.unicode == K_SPACE) {
@@ -1107,11 +983,11 @@ bool GameplayMenu::handleUnknownKey(Key key, const int modKeys) {
             leaveAnim_ = "";
             if (mission_->completed()) {
                 // Display success animation
-                menu_manager_->gotoMenu(Menu::MENU_FLI_SUCCESS);
+                menu_manager_->gotoMenu(fs_game_menus::kMenuIdFliSuccess);
             }
             else if (mission_->failed()) {
                 
-                menu_manager_->gotoMenu(Menu::MENU_FLI_FAILED_MISSION);
+                menu_manager_->gotoMenu(fs_game_menus::kMenuIdFliFailedMission);
             }
 
             return true;
@@ -1155,19 +1031,33 @@ bool GameplayMenu::handleUnknownKey(Key key, const int modKeys) {
         g_App.music().toggleMusic();
     } else if (key.keyFunc == KFC_F2) { // Sound Control
         g_App.gameSounds().toggleSound();
-    } else if (isLetterD(key.unicode)) { // selected agents are killed with 'd'
-        if (ctrl) {
-            // excluding all selected agents from recieve damage from agent
-            // near, to make simultanious explosion
-            for (SquadSelection::Iterator it = selection_.begin();
-                            it != selection_.end(); ++it) {
-                    (*it)->setIsIgnored(true);
-            }
+    }
 
-            for (SquadSelection::Iterator it = selection_.begin();
-                            it != selection_.end(); ++it) {
-                    (*it)->commit_suicide();
-            }
+#ifdef _DEBUG
+    else if (key.keyFunc == KFC_F3) {
+        mission_->endWithStatus(Mission::COMPLETED);
+        return true;
+    } else if (key.keyFunc == KFC_F4) {
+        mission_->endWithStatus(Mission::FAILED);
+        return true;
+    }
+#endif
+    else if (key.keyFunc >= KFC_F5 && key.keyFunc <= KFC_F12) {
+        // Those keys are direct access to inventory
+        uint8 weapon_idx = (uint8) key.keyFunc - (uint8) KFC_F5;
+        handleWeaponSelection(weapon_idx, ctrl);
+        return true;
+    } else if (isLetterD(key.unicode) && ctrl) { // selected agents are killed with 'd'
+        // save current selection as it will be modified when agents die
+        std::vector<PedInstance *> agents_suicide;
+        for (SquadSelection::Iterator it = selection_.begin();
+                        it != selection_.end(); ++it) {
+                agents_suicide.push_back(*it);
+                (*it)->set_is_suiciding(true);
+        }
+
+        for (size_t i=0; i < agents_suicide.size(); i++) {
+            agents_suicide[i]->commit_suicide();
         }
     } else {
         consumed = false;
@@ -1351,15 +1241,15 @@ void GameplayMenu::drawMissionHint(int elapsed) {
         for (SquadSelection::Iterator it = selection_.begin();
                             it != selection_.end(); ++it) {
             if ((*it)->isMoving()) {
-                str = g_App.menus().getMessage("HINT_GOING");
+                str = getMessage("HINT_GOING");
             } else {
-                str = g_App.menus().getMessage("HINT_OBSERVING");
+                str = getMessage("HINT_OBSERVING");
             }
             if ((*it)->wePickupWeapon()) {
-                str = g_App.menus().getMessage("HINT_PICKUP_WEAPON");
+                str = getMessage("HINT_PICKUP_WEAPON");
             }
             if ((*it)->drawnAnim() == PedInstance::ad_HitAnim) {
-                str = g_App.menus().getMessage("HINT_HIT_BY_BULLET");
+                str = getMessage("HINT_HIT_BY_BULLET");
             }
         }
         txtColor = 14;
@@ -1376,18 +1266,18 @@ void GameplayMenu::drawMissionHint(int elapsed) {
         if (mission_) {
             mission_->objectiveMsg(str);
             if (mission_->failed()) {
-                str = g_App.menus().getMessage("HINT_MISSION_FAILED");
+                str = getMessage("HINT_MISSION_FAILED");
                 text_pw = false;
             }
 
             if (mission_->completed()) {
-                str = g_App.menus().getMessage("HINT_MISSION_COMPLETE");
+                str = getMessage("HINT_MISSION_COMPLETE");
                 text_pw = false;
             }
 
             if (mission_hint_ > 40 && mission_hint_ < 61)
                 if (mission_->completed() || mission_->failed()) {
-                    str = g_App.menus().getMessage("HINT_PRESS_SPACE");
+                    str = getMessage("HINT_PRESS_SPACE");
                     text_pw = false;
                 }
         }
@@ -1437,6 +1327,8 @@ void GameplayMenu::drawWeaponSelectors() {
                         && (mission_hint_ % 20) < 10
                         && target_->map() != -1)
                     {
+                        // player is pointing a weapon on the ground and there's space
+                        // in the inventory to display its icon
                         wi = (WeaponInstance *)target_;
                         draw_pw = false;
                         s = wi->getWeaponClass()->selector() + 40;
@@ -1583,11 +1475,39 @@ void GameplayMenu::updateSelectAll() {
         && nbAgentAlive != 0) || nbAgentAlive == 1);
 }
 
+/*!
+ *
+ */
+void GameplayMenu::handleWeaponSelection(uint8 weapon_idx, bool ctrl) {
+    PedInstance *pLeader = selection_.leader();
+
+    if (weapon_idx < pLeader->numWeapons()) {
+        WeaponInstance *wi = pLeader->weapon(weapon_idx);
+        if (pLeader->selectedWeapon() == wi) {
+            // Player clicked on an already selected weapon -> deselect
+            selection_.deselect_all_weapons();
+        } else {
+            selection_.select_weapon_from_leader(weapon_idx, ctrl);
+        }
+    }
+    g_App.gameSounds().play(snd::SPEECH_SELECTED);
+}
+
 /**
  * Method to intercept game events.
  */
 void GameplayMenu::handleGameEvent(GameEvent evt) {
     if (evt.type == GameEvent::kAgentDied) {
+        // checking agents, if all are dead -> mission failed
+        if (mission_->getSquad()->isAllDead()) {
+            mission_->endWithStatus(Mission::FAILED);
+            // clear signal on minimap
+            GameEvent evt;
+            evt.type = GameEvent::kObjFailed;
+            mm_renderer_.handleGameEvent(evt);
+        }
+
+        // Anyway update selection
         PedInstance *p_ped = static_cast<PedInstance *> (evt.pCtxt);
         updateSelectionForDeadAgent(p_ped);
     }

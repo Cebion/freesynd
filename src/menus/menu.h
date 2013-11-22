@@ -45,22 +45,11 @@ class MenuManager;
 class Menu {
 public:
     static const int MENU_NO_MENU;
-    static const int MENU_MAIN;
-    static const int MENU_BRIEF;
-    static const int MENU_CONF;
-    static const int MENU_DEBRIEF;
-    static const int MENU_GAMEPLAY;
-    static const int MENU_LOADING;
-    static const int MENU_LOGOUT;
-    static const int MENU_RESEARCH;
-    static const int MENU_SELECT;
-    static const int MENU_LDSAVE;
-    static const int MENU_MAP;
-    static const int MENU_FLI_SUCCESS;
-    static const int MENU_FLI_FAILED_MISSION;
-    static const int MENU_FLI_TITLE;
-    static const int MENU_FLI_INTRO;
-    static const int MENU_FLI_GAME_LOST;
+    static const int kMenuIdLogout;
+    /*! Id of the mouse left button.*/
+    static const int kMouseLeftButton;
+    /*! Id of the mouse right button.*/
+    static const int kMouseRightButton;
 
     /*!
         * Menu constructor.
@@ -159,6 +148,9 @@ public:
     void captureInputBy(TextField *pTextfield);
     bool isPaused() { return paused_; }
 
+    MenuManager *getMenuManager() { return menu_manager_; }
+    void addDirtyRect(int x, int y, int width, int height);
+
 protected:
 
     //! Callback function : Childs can reimplement
@@ -177,12 +169,15 @@ protected:
     virtual bool handleUnknownKey(Key key, const int modKeys) { return false;}
 
     void needRendering();
-    void addDirtyRect(int x, int y, int width, int height);
 
     //! Convenient method to return the menu font with the given size
     MenuFont * getMenuFont(FontManager::EFontSize size);
     //! Convenient method to return the game font
     GameFont *gameFont();
+    //! Convenient method to get messages
+    std::string getMessage(const std::string & id);
+    //! Convenient method to get messages
+    void getMessage(const std::string & id, std::string & msg);
 
 protected:
     class HotKey {

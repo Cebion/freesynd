@@ -25,6 +25,9 @@
 
 #include "core/squad.h"
 #include "agentmanager.h"
+#include "map.h"
+
+class Vehicle;
 
 /*!
  * This class manages the agents selection during a gameplay session.
@@ -153,6 +156,22 @@ class SquadSelection {
     // Returns the leader as a PedInstance
     PedInstance * leader() { return pSquad_->member(leader_);}
 
+    //*************************************
+    // Action on multiple agents
+    //*************************************
+    //! Deselects all selected agents weapons
+    void deselect_all_weapons();
+    //! Select a weapon for the leader and for all selected agents
+    void select_weapon_from_leader(int weapon_idx, bool apply_to_all);
+    //! Go and pick up weapon
+    void pickupWeapon(WeaponInstance *pWeapon, bool addAction);
+    //! Follow Ped
+    void followPed(PedInstance *pPed, bool addAction);
+    //! Enter or leave the vehicle : do the same as leader
+    void enterOrLeaveVehicle(Vehicle *pVehicle, bool addAction);
+    //! Move selected agents to the given point
+    void moveTo(MapTilePoint &mapPt, bool addAction);
+    void shootAt(PathNode &pn);
  private:
     /*!
      * Return true if an agent can be selected :

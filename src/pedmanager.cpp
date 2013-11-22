@@ -26,7 +26,9 @@
 
 #include <stdio.h>
 #include <assert.h>
-#include "app.h"
+
+#include "pedmanager.h"
+#include "core/gamecontroller.h"
 
 PedManager::PedManager()
 {
@@ -141,12 +143,14 @@ void PedManager::setPed(Ped *pedanim, unsigned short baseAnim)
  * \param map id of the map
  * \return NULL if the ped could not be created.
  */
-PedInstance *PedManager::loadInstance(LevelData::People & gamdata, uint16 ped_idx, int map)
+PedInstance *PedManager::loadInstance(const LevelData::People & gamdata, uint16 ped_idx, int map)
 {
-    if(gamdata.type == 0x0 || gamdata.desc == 0x0D || gamdata.desc == 0x0C)
+    if(gamdata.type == 0x0 || 
+        gamdata.location == LevelData::kPeopleLocNotVisible || 
+        gamdata.location == LevelData::kPeopleLocAboveWalkSurf)
         return NULL;
 
-    if (ped_idx < 4 && !g_Session.agents().isSquadSlotActive(ped_idx)) {
+    if (ped_idx < 4 && !g_gameCtrl.agents().isSquadSlotActive(ped_idx)) {
         // Creates agent only if he's active
         return NULL;
     }if (ped_idx >= 4 && ped_idx < 8) {
@@ -158,10 +162,6 @@ PedInstance *PedManager::loadInstance(LevelData::People & gamdata, uint16 ped_id
     Ped *pedanim = new Ped();
     setPed(pedanim, READ_LE_UINT16(gamdata.index_base_anim));
     PedInstance *newped = pedanim->createInstance(map);
-
-#ifdef _DEBUG
-        newped->setDebugID(ped_idx);
-#endif
 
     int hp = READ_LE_INT16(gamdata.health);
     if (hp <= 0)

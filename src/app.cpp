@@ -54,8 +54,12 @@
 #include "utils/log.h"
 #include "utils/configfile.h"
 #include "utils/portablefile.h"
+#include "agent.h"
+#include "menus/gamemenufactory.h"
+#include "menus/gamemenuid.h"
 
 App::App(bool disable_sound):
+context_(new AppContext),
 session_(new GameSession()), game_ctlr_(new GameController), 
     screen_(new Screen(GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT))
 #ifdef SYSTEM_SDL
@@ -63,10 +67,9 @@ session_(new GameSession()), game_ctlr_(new GameController),
 #else
 #error A suitable System object has not been defined!
 #endif
-    , intro_sounds_(disable_sound), game_sounds_(disable_sound), music_(disable_sound)
+    , intro_sounds_(disable_sound), game_sounds_(disable_sound), music_(disable_sound),
+    menus_(new GameMenuFactory(), &game_sounds_)
 {
-    fullscreen_ = false;
-    playIntro_ = true;
     running_ = true;
 #ifdef _DEBUG
     debug_breakpoint_trigger_ = 0;
@@ -170,9 +173,9 @@ bool App::readConfiguration() {
         ConfigFile conf(iniPath_);
         string origDataDir;
         string ourDataDir;
-        conf.readInto(fullscreen_, "fullscreen", false);
-        conf.readInto(playIntro_, "play_intro", true);
-        conf.readInto(time_for_click_, "time_for_click", 80);
+        context_->setFullScreen(conf.read("fullscreen", false));
+        context_->setPlayIntro(conf.read("play_intro", true));
+        context_->setTimeForClick(conf.read("time_for_click", 80));
         bool origDataDirFound = conf.readInto(origDataDir, "data_dir");
         bool ourDataDirFound = conf.readInto(ourDataDir, "freesynd_data_dir");
 
@@ -203,19 +206,19 @@ bool App::readConfiguration() {
 
         switch (conf.read("language", 0)) {
             case 0:
-                menus_.setLanguage(MenuManager::ENGLISH);
+                context_->setLanguage(AppContext::ENGLISH);
                 break;
             case 1:
-                menus_.setLanguage(MenuManager::FRENCH);
+                context_->setLanguage(AppContext::FRENCH);
                 break;
             case 2:
-                menus_.setLanguage(MenuManager::ITALIAN);
+                context_->setLanguage(AppContext::ITALIAN);
                 break;
             case 3:
-                menus_.setLanguage(MenuManager::GERMAN);
+                context_->setLanguage(AppContext::GERMAN);
                 break;
             default:
-                menus_.setLanguage(MenuManager::ENGLISH);
+                context_->setLanguage(AppContext::ENGLISH);
                 break;
         }
 
@@ -372,12 +375,12 @@ bool App::initialize(const std::string& iniPath) {
     }
 
     LOG(Log::k_FLG_INFO, "App", "initialize", ("initializing system..."))
-    if (!system_->initialize(fullscreen_)) {
+    if (!system_->initialize(context_->isFullScreen())) {
         return false;
     }
 
     LOG(Log::k_FLG_INFO, "App", "initialize", ("initializing menus..."))
-    if (!menus_.initialize(playIntro_)) {
+    if (!menus_.initialize(context_->isPlayIntro())) {
         return false;
     }
 
@@ -394,7 +397,7 @@ bool App::initialize(const std::string& iniPath) {
         return false;
     }
 
-    if (playIntro_) {
+    if (context_->isPlayIntro()) {
         LOG(Log::k_FLG_INFO, "App", "initialize", ("Loading intro sounds..."))
         if (!intro_sounds_.loadSounds(SoundManager::SAMPLES_INTRO)) {
             return false;
@@ -410,7 +413,7 @@ bool App::initialize(const std::string& iniPath) {
     music_.loadMusic();
 
     LOG(Log::k_FLG_INFO, "App", "initialize", ("Loading game data..."))
-    g_Session.agents().loadAgents();
+    g_gameCtrl.agents().loadAgents();
     return reset();
 }
 
@@ -422,22 +425,22 @@ void App::cheatRepeatOrCompleteMission() {
 }
 
 void App::cheatWeaponsAndMods() {
-    weapons_.cheatEnableAllWeapons();
-    mods_.cheatEnableAllMods();
+    g_gameCtrl.weapons().cheatEnableAllWeapons();
+    g_gameCtrl.mods().cheatEnableAllMods();
 }
 
 void App::cheatEquipAllMods() {
     for (int agent = 0; agent < AgentManager::MAX_AGENT; agent++) {
-        Agent *pAgent = g_Session.agents().agent(agent);
+        Agent *pAgent = g_gameCtrl.agents().agent(agent);
         if (pAgent) {
             pAgent->clearSlots();
 
-            pAgent->addMod(mods_.getMod(Mod::MOD_LEGS, Mod::MOD_V3));
-            pAgent->addMod(mods_.getMod(Mod::MOD_ARMS, Mod::MOD_V3));
-            pAgent->addMod(mods_.getMod(Mod::MOD_EYES, Mod::MOD_V3));
-            pAgent->addMod(mods_.getMod(Mod::MOD_BRAIN, Mod::MOD_V3));
-            pAgent->addMod(mods_.getMod(Mod::MOD_CHEST, Mod::MOD_V3));
-            pAgent->addMod(mods_.getMod(Mod::MOD_HEART, Mod::MOD_V3));
+            pAgent->addMod(g_gameCtrl.mods().getMod(Mod::MOD_LEGS, Mod::MOD_V3));
+            pAgent->addMod(g_gameCtrl.mods().getMod(Mod::MOD_ARMS, Mod::MOD_V3));
+            pAgent->addMod(g_gameCtrl.mods().getMod(Mod::MOD_EYES, Mod::MOD_V3));
+            pAgent->addMod(g_gameCtrl.mods().getMod(Mod::MOD_BRAIN, Mod::MOD_V3));
+            pAgent->addMod(g_gameCtrl.mods().getMod(Mod::MOD_CHEST, Mod::MOD_V3));
+            pAgent->addMod(g_gameCtrl.mods().getMod(Mod::MOD_HEART, Mod::MOD_V3));
         }
     }
 }
@@ -462,50 +465,50 @@ void App::cheatAccelerateTime() {
 }
 
 void App::cheatFemaleRecruits() {
-    g_Session.agents().reset(true);
+    g_gameCtrl.agents().reset(true);
 
     for (size_t i = 0; i < AgentManager::kMaxSlot; i++)
-        g_Session.agents().setSquadMember(i, g_Session.agents().agent(i));
+        g_gameCtrl.agents().setSquadMember(i, g_gameCtrl.agents().agent(i));
 }
 
 void App::cheatEquipFancyWeapons() {
     for (int i = 0; i < AgentManager::MAX_AGENT; i++) {
-        if (g_Session.agents().agent(i)) {
-        g_Session.agents().agent(i)->removeAllWeapons();
+        if (g_gameCtrl.agents().agent(i)) {
+        g_gameCtrl.agents().agent(i)->removeAllWeapons();
 #ifdef _DEBUG
-        g_Session.agents().agent(i)->addWeapon(
-            weapons_.getWeapon(Weapon::Minigun)->createInstance());
-        g_Session.agents().agent(i)->addWeapon(
-            weapons_.getWeapon(Weapon::TimeBomb)->createInstance());
-        g_Session.agents().agent(i)->addWeapon(
-            weapons_.getWeapon(Weapon::GaussGun)->createInstance());
-        g_Session.agents().agent(i)->addWeapon(
-            weapons_.getWeapon(Weapon::Flamer)->createInstance());
-        g_Session.agents().agent(i)->addWeapon(
-            weapons_.getWeapon(Weapon::Uzi)->createInstance());
-        g_Session.agents().agent(i)->addWeapon(
-            weapons_.getWeapon(Weapon::Persuadatron)->createInstance());
-        g_Session.agents().agent(i)->addWeapon(
-            weapons_.getWeapon(Weapon::Laser)->createInstance());
-        g_Session.agents().agent(i)->addWeapon(
-            weapons_.getWeapon(Weapon::AccessCard)->createInstance());
+        g_gameCtrl.agents().agent(i)->addWeapon(
+            g_gameCtrl.weapons().getWeapon(Weapon::Minigun)->createInstance());
+        g_gameCtrl.agents().agent(i)->addWeapon(
+            g_gameCtrl.weapons().getWeapon(Weapon::TimeBomb)->createInstance());
+        g_gameCtrl.agents().agent(i)->addWeapon(
+            g_gameCtrl.weapons().getWeapon(Weapon::GaussGun)->createInstance());
+        g_gameCtrl.agents().agent(i)->addWeapon(
+            g_gameCtrl.weapons().getWeapon(Weapon::Flamer)->createInstance());
+        g_gameCtrl.agents().agent(i)->addWeapon(
+            g_gameCtrl.weapons().getWeapon(Weapon::Uzi)->createInstance());
+        g_gameCtrl.agents().agent(i)->addWeapon(
+            g_gameCtrl.weapons().getWeapon(Weapon::Persuadatron)->createInstance());
+        g_gameCtrl.agents().agent(i)->addWeapon(
+            g_gameCtrl.weapons().getWeapon(Weapon::Laser)->createInstance());
+        g_gameCtrl.agents().agent(i)->addWeapon(
+            g_gameCtrl.weapons().getWeapon(Weapon::AccessCard)->createInstance());
 #else
-        g_Session.agents().agent(i)->addWeapon(
-                weapons_.getWeapon(Weapon::Minigun)->createInstance());
-        g_Session.agents().agent(i)->addWeapon(
-                weapons_.getWeapon(Weapon::Minigun)->createInstance());
-        g_Session.agents().agent(i)->addWeapon(
-                weapons_.getWeapon(Weapon::Persuadatron)->createInstance());
-        g_Session.agents().agent(i)->addWeapon(
-                weapons_.getWeapon(Weapon::TimeBomb)->createInstance());
-        g_Session.agents().agent(i)->addWeapon(
-                weapons_.getWeapon(Weapon::EnergyShield)->createInstance());
-        g_Session.agents().agent(i)->addWeapon(
-                weapons_.getWeapon(Weapon::EnergyShield)->createInstance());
-        g_Session.agents().agent(i)->addWeapon(
-                weapons_.getWeapon(Weapon::Laser)->createInstance());
-        g_Session.agents().agent(i)->addWeapon(
-                weapons_.getWeapon(Weapon::Laser)->createInstance());
+        g_gameCtrl.agents().agent(i)->addWeapon(
+                g_gameCtrl.weapons().getWeapon(Weapon::Minigun)->createInstance());
+        g_gameCtrl.agents().agent(i)->addWeapon(
+                g_gameCtrl.weapons().getWeapon(Weapon::Minigun)->createInstance());
+        g_gameCtrl.agents().agent(i)->addWeapon(
+                g_gameCtrl.weapons().getWeapon(Weapon::Persuadatron)->createInstance());
+        g_gameCtrl.agents().agent(i)->addWeapon(
+                g_gameCtrl.weapons().getWeapon(Weapon::TimeBomb)->createInstance());
+        g_gameCtrl.agents().agent(i)->addWeapon(
+                g_gameCtrl.weapons().getWeapon(Weapon::EnergyShield)->createInstance());
+        g_gameCtrl.agents().agent(i)->addWeapon(
+                g_gameCtrl.weapons().getWeapon(Weapon::EnergyShield)->createInstance());
+        g_gameCtrl.agents().agent(i)->addWeapon(
+                g_gameCtrl.weapons().getWeapon(Weapon::Laser)->createInstance());
+        g_gameCtrl.agents().agent(i)->addWeapon(
+                g_gameCtrl.weapons().getWeapon(Weapon::Laser)->createInstance());
 #endif
         }
     }
@@ -569,9 +572,7 @@ void App::setCheatCode(const char *name) {
  * \returns True if reset is ok.
  */
 bool App::reset() {
-    // Reset default mods and weapons
-    weapons_.reset();
-    mods_.reset();
+    g_gameCtrl.reset();
 
     // Reset user session
     if (!g_Session.reset()) {
@@ -624,13 +625,13 @@ void App::run(int start_mission) {
 #endif
 
     if (start_mission == -1) {
-        if (playIntro_) {
-            menus_.gotoMenu(Menu::MENU_FLI_INTRO);
+        if (context_->isPlayIntro()) {
+            menus_.gotoMenu(fs_game_menus::kMenuIdFliIntro);
             // Update intro flag so intro won't be played next time
             updateIntroFlag();
         } else {
             // play title before going to main menu
-            menus_.gotoMenu(Menu::MENU_FLI_TITLE);
+            menus_.gotoMenu(fs_game_menus::kMenuIdFliTitle);
         }
     }
     else {
@@ -645,7 +646,7 @@ void App::run(int start_mission) {
             }
         }
         // Then we go to the brief menu
-        menus_.gotoMenu(Menu::MENU_BRIEF);
+        menus_.gotoMenu(fs_game_menus::kMenuIdBrief);
     }
 
     int lasttick = SDL_GetTicks();
@@ -696,14 +697,14 @@ bool App::saveGameToFile(int fileSlot, std::string name) {
         g_Session.saveToFile(outfile);
 
         // Weapons
-        weapons_.saveToFile(outfile);
+        g_gameCtrl.weapons().saveToFile(outfile);
 
         // Mods
-        mods_.saveToFile(outfile);
+        g_gameCtrl.mods().saveToFile(outfile);
 
         // Agents
         // TODO move in sesion saveToFile
-        g_Session.agents().saveToFile(outfile);
+        g_gameCtrl.agents().saveToFile(outfile);
 
         // save researches
         // TODO move in sesion saveToFile
@@ -761,13 +762,13 @@ bool App::loadGameFromFile(int fileSlot) {
         g_Session.loadFromFile(infile, v);
 
         // Weapons
-        weapons_.loadFromFile(infile, v);
+        g_gameCtrl.weapons().loadFromFile(infile, v);
 
         // Mods
-        mods_.loadFromFile(infile, v);
+        g_gameCtrl.mods().loadFromFile(infile, v);
 
         // Agents
-        g_Session.agents().loadFromFile(infile, v);
+        g_gameCtrl.agents().loadFromFile(infile, v);
 
         // Research
         g_Session.researchManager().loadFromFile(infile, v);

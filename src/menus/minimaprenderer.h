@@ -27,7 +27,9 @@
 
 #include "common.h"
 #include "map.h"
+#include "pathsurfaces.h"
 #include "utils/timer.h"
+#include "core/gameevent.h"
 
 class Mission;
 class MissionBriefing;
@@ -182,7 +184,7 @@ class GamePlayMinimapRenderer : public MinimapRenderer, GameEventListener {
     //! called when zoom changes
     void updateRenderingInfos();
     //! Draw all visible cars
-    void drawCars(uint8 * a_minimap);
+    void drawVehicles(uint8 * a_minimap);
     //! Draw all visible dropped weapons
     void drawWeapons(uint8 * a_minimap);
     //! Draw visible peds
@@ -277,8 +279,8 @@ class GamePlayMinimapRenderer : public MinimapRenderer, GameEventListener {
 
     //! Clear all signals on map
     void handleClearSignal();
-    void handleTargetSet();
-    void handleEvacuationSet();
+    void handleTargetSet(GameEvent &evt);
+    void handleEvacuationSet(GameEvent &evt);
  private:
      /*! Radius of the red evacuation circle.*/
     static const int kEvacuationRadius;

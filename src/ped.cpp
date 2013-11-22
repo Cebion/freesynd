@@ -7,6 +7,7 @@
  *   Copyright (C) 2006  Trent Waddington <qg@biodome.org>              *
  *   Copyright (C) 2006  Tarjei Knapstad <tarjei.knapstad@gmail.com>    *
  *   Copyright (C) 2010  Bohdan Stelmakh <chamel@users.sourceforge.net> *
+ *   Copyright (C) 2013  Benoit Blancard <benblan@users.sourceforge.net>*
  *                                                                      *
  *    This program is free software;  you can redistribute it and / or  *
  *  modify it  under the  terms of the  GNU General  Public License as  *
@@ -29,6 +30,8 @@
 #include "vehicle.h"
 #include "mission.h"
 #include "core/squad.h"
+
+const int PedInstance::kAgentMaxHealth = 16;
 
 Ped::Ped() {
     memset(stand_anims_, 0, sizeof(stand_anims_));
@@ -308,14 +311,142 @@ void PedInstance::setActionStateToDrawnAnim(void) {
 #endif
 }
 
+/*!
+ * Set the given state as the new state.
+ * Update corresponding animation.
+ * \param as new state
+ */
+void PedInstance::goToState(uint32 as) {
+    switchActionStateTo(as);
+    setActionStateToDrawnAnim();
+}
+
+/*!
+ * Leaves the given state.
+ * Update corresponding animation.
+ * \param as new state
+ */
+void PedInstance::leaveState(uint32 as) {
+    switchActionStateFrom(as);
+    setActionStateToDrawnAnim();
+}
+
+/*!
+ * Update the current frame.
+ * Returns true if an animation has ended.
+ * \param elapsed Time since the last frame
+ * \return True if animation has ended.
+ */
+bool PedInstance::updateAnimation(int elapsed) {
+    MapObject::animate(elapsed);
+
+    return handleDrawnAnim(elapsed);
+}
+
+/*!
+ * Animates the ped (ie executes all the ped's actions).
+ * If Ped has currently no action, execute behaviour
+ * to determine default actions. Then executes the actions.
+ * Ped can shoot while doing an action only if that action is not exclusive
+ * (like dropping a weapon or entering a car).
+ * Finally, update the animation. If an action is waiting for an animation
+ * and that animation is finished, unlocks the action.
+ * \param elapsed Time since the last frame
+ * \param mission Mission data
+ * \return True if something has changed (so update rendering)
+ */
+bool PedInstance::animate2(int elapsed, Mission *mission) {
+    if (currentAction_ == NULL) {
+        // Ped is doing nothing right now, so behave
+        pBehaviour_->execute(mission, this);
+    }
+
+    // Execute any active action
+    bool update = executeAction(elapsed, mission);
+
+    // cannot shoot if ped is doing something exlusive
+    if (currentAction_ && !currentAction_->isExclusive()) {
+        update |= executeShootAction();
+    }
+
+    if (updateAnimation(elapsed)) {
+        // An action was waiting for the animation to finish
+        if (currentAction_ && currentAction_->isWaitingForAnimation()) {
+            // so continue action
+            currentAction_->setRunning();
+        }
+    }
+
+    return update;
+}
+
+/*!
+ * Executes the maximum number of actions.
+ * \param elapsed Time since the last frame
+ * \param mission Mission data
+ * \return True if something has changed (to update rendering)
+ */
+bool PedInstance::executeAction(int elapsed, Mission *pMission) {
+    bool updated = false;
+    while(currentAction_ != NULL) {
+        // execute action
+        updated |= currentAction_->execute(elapsed, pMission, this);
+        if (currentAction_->isFinished()) {
+            // current action is finished : go to next one
+            fs_actions::Action *pNext = currentAction_->next();
+            if (currentAction_->canRemove()) {
+                // but before erase action
+                delete currentAction_;
+            }
+            currentAction_ = pNext;
+        } else {
+            // current action is still running, so stop iterate now
+            // we will continue next time
+            break;
+        }
+    }
+
+    return updated;
+}
+
+/*!
+ * Executes a shoot action.
+ */
+bool PedInstance::executeShootAction() {
+    return false;
+}
+
+/*!
+ * Return true if :
+ * - is not doing something that prevents him from shooting
+ * - the shoot action buffer is not full
+ * - has a weapon in hand
+ * - weapon is for shooting (ie not a scanner for example)
+ */
+bool PedInstance::canAddShootAction() {
+    if (currentAction_ != NULL && currentAction_->isExclusive()) {
+        return false;
+    }
+
+    if (nbShootInQueue_ >= 3) {
+        return false;
+    }
+    WeaponInstance *pWi = selectedWeapon();
+    return (pWi != NULL && pWi->canShoot() && pWi->ammoRemaining() > 0);
+}
+
 bool PedInstance::animate(int elapsed, Mission *mission) {
+    // Temporarily use new animation for our agent
+    if (isOurAgent()) {
+        return animate2(elapsed, mission);
+    }
     // TODO: weapon selection action, and use only deselectweapon
     // to disarm
 
     bool updated = false;
-    if (actions_property_ == 1) {
+    if (drop_actions_) {
         dropActQ();
-        actions_property_ = 0;
+        drop_actions_ = false;
     }
 
     if (!actions_queue_.empty()) {
@@ -356,7 +487,7 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
         uint32 groups_processed = 0;
         for (std::vector <actionQueueGroupType>::iterator it =
             actions_queue_.begin(); it != actions_queue_.end()
-            && actions_property_ == 0; ++it)
+            && !drop_actions_; ++it)
         {
             if ((it->state & 128) == 0 && (it->state & 76) != 0)
                 continue;
@@ -369,7 +500,6 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
             }
 
             uint32 acts_g_prcssd = 0;
-            updtPreferedWeapon();
             for (uint32 indx = 0; indx < it->actions.size(); ++indx)
             {
                 std::vector <actionQueueType>::iterator aqt = it->actions.begin() + indx;
@@ -451,7 +581,7 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
                                         }
                                     }
                                     if ((state_ & PedInstance::pa_smUsingCar) != 0) {
-                                        v->setDestinationV(mission, aqt->target.t_pn.tileX(),
+                                        v->setDestinationV(aqt->target.t_pn.tileX(),
                                             aqt->target.t_pn.tileY(), aqt->target.t_pn.tileZ(),
                                             aqt->target.t_pn.offX(), aqt->target.t_pn.offY(), 1024);
                                         if (v->isMoving()) {
@@ -470,7 +600,7 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
                                     if (checkCurrPosTileOnly(aqt->target.t_pn))
                                         aqt->state |= 4;
                                     else {
-                                        v->setDestinationV(mission, aqt->target.t_pn.tileX(),
+                                        v->setDestinationV(aqt->target.t_pn.tileX(),
                                             aqt->target.t_pn.tileY(), aqt->target.t_pn.tileZ(),
                                             aqt->target.t_pn.offX(), aqt->target.t_pn.offY(), 1024);
                                         if (v->isMoving()) {
@@ -498,7 +628,7 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
                                 int tm_left = elapsed;
                                 uint16 answ = wi->inflictDamage(aqt->target.t_smo, NULL, &tm_left);
                                 if (answ == 0) {
-                                    if (checkFriendIs((PedInstance *)aqt->target.t_smo))
+                                    if (isFriendWith((PedInstance *)aqt->target.t_smo))
                                         aqt->state |= 4;
                                 } else if (answ == 2) {
                                     aqt->state |= 2;
@@ -555,9 +685,8 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
                         {
                             VehicleInstance *v = (VehicleInstance *)aqt->target.t_smo;
                             if (v->isInsideVehicle(this)) {
-                                v->removeDriver(this);
+                                v->dropPassenger(this);
                                 aqt->state |= 4;
-                                leaveVehicle();
                             } else
                                 aqt->state |= 8;
                         }
@@ -597,7 +726,7 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
                             aqt->state |= 12;
                         } else if ((aqt->target.t_smo->majorType() == MapObject::mjt_Ped
                             ? aqt->multi_var.enemy_var.forced_shot
-                            || !checkFriendIs((PedInstance *)aqt->target.t_smo) : true)
+                            || !isFriendWith((PedInstance *)aqt->target.t_smo) : true)
                             && selectRequiredWeapon(&aqt->multi_var.enemy_var.pw_to_use))
                         {
                             // TODO: if object can't see target and none of
@@ -651,7 +780,7 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
                     {
                         //if (aqt->multi_var.time_var.desc == 0) {
                             if ((aqt->target.t_smo->majorType() == MapObject::mjt_Ped
-                                && !checkHostileIs((PedInstance *)aqt->target.t_smo))
+                                && !isHostileTo((PedInstance *)aqt->target.t_smo))
                                 || aqt->target.t_smo->isDead())
                             {
                                 aqt->act_exec &= PedInstance::ai_aAll
@@ -698,7 +827,7 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
                     }
                     if (aqt->state == 1) {
                         speed_ = aqt->multi_var.dist_var.speed != -1
-                            ? aqt->multi_var.dist_var.speed: getSpeed();
+                            ? aqt->multi_var.dist_var.speed: getDefaultSpeed();
                         if (aqt->condition == 0) {
                             bool set_new_dest = true;
                             dist_to_pos_ = aqt->multi_var.dist_var.dist;
@@ -794,7 +923,7 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
                     }
                     if ((aqt->state & 15) == 3) {
                         speed_ = aqt->multi_var.dist_var.speed != -1
-                            ? aqt->multi_var.dist_var.speed: getSpeed();
+                            ? aqt->multi_var.dist_var.speed: getDefaultSpeed();
                         if (aqt->condition == 0 || aqt->condition == 2) {
                             updated = movementP(mission, elapsed);
                             if (speed_ == 0)
@@ -870,7 +999,7 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
                     // TODO: review, reduce code(, in sight when no weapon?)
                     } else if (aqt->state == 1 || aqt->state == 17) {
                         speed_ = aqt->multi_var.dist_var.speed != -1
-                            ? aqt->multi_var.dist_var.speed: getSpeed();
+                            ? aqt->multi_var.dist_var.speed: getDefaultSpeed();
                         if (aqt->condition == 0) {
                             dist_to_pos_ = aqt->multi_var.dist_var.dist;
                             int dist_is = -1;
@@ -933,7 +1062,7 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
                         }
                     } else if ((aqt->state & 30) == 2) {
                         speed_ = aqt->multi_var.dist_var.speed != -1
-                            ? aqt->multi_var.dist_var.speed: getSpeed();
+                            ? aqt->multi_var.dist_var.speed: getDefaultSpeed();
                         if (aqt->condition == 0) {
                             updated = movementP(mission, elapsed);
                             if (speed_ == 0) {
@@ -1077,7 +1206,7 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
                                     continue;
                                 }
                                 if (p->objGroupDef() == obj_group_def_
-                                    && checkFriendIs(p))
+                                    && isFriendWith(p))
                                 {
                                     Msmod_t::iterator it_s, it_e;
                                     if (p->getHostilesFoundIt(it_s, it_e)) {
@@ -1088,7 +1217,7 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
                                             // become invalidated by other
                                             // peds actions
                                             if ((!smo->isExcluded())
-                                                && checkHostileIs(smo))
+                                                && isHostileTo(smo))
                                             {
                                                 // TODO: set ignoreblocker based on Ai
                                                 if (mission->inRangeCPos(
@@ -1104,8 +1233,8 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
                                             ++it_s;
                                         } while (it_s != it_e);
                                     }
-                                } else if (checkHostileIs(p) ) {
-                                    // TODO: hostile_desc_alt to checkHostileIs?
+                                } else if (isHostileTo(p) ) {
+                                    // TODO: hostile_desc_alt to isHostileTo?
                                     double distTo = 0;
                                     // TODO: set ignoreblocker based on Ai
                                     if (mission->inRangeCPos(&cur_xyz,
@@ -1128,8 +1257,8 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
                                 {
                                     continue;
                                 }
-                                if (checkHostileIs(p) ) {
-                                    // TODO: hostile_desc_alt to checkHostileIs?
+                                if (isHostileTo(p) ) {
+                                    // TODO: hostile_desc_alt to isHostileTo?
                                     double distTo = 0;
                                     // TODO: set ignoreblocker based on Ai
                                     if (mission->inRangeCPos(&cur_xyz,
@@ -1145,8 +1274,8 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
                         }
                         int num_vehicles = mission->numVehicles();
                         for (int i = 0; i < num_vehicles; ++i) {
-                            VehicleInstance *v = mission->vehicle(i);
-                            if ((!v->isExcluded()) && v->checkHostilesInside(this, 0))
+                            Vehicle *v = mission->vehicle(i);
+                            if ((!v->isExcluded()) && v->containsHostilesForPed(this, 0))
                             {
                                 double distTo = 0;
                                 // TODO: set ignoreblocker based on Ai
@@ -1304,7 +1433,7 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
                             {
                                 continue;
                             }
-                            if (!checkFriendIs(p) ) {
+                            if (!isFriendWith(p) ) {
                                 double distTo = 0;
                                 if (mission->inRangeCPos(&cur_xyz,
                                     (ShootableMapObject **)(&p), NULL, false, false,
@@ -1619,7 +1748,7 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
                 }
                 if ((aqt->act_exec & PedInstance::ai_aDeselectCurWeapon) != 0)
                 {
-                    setSelectedWeapon(-1);
+                    deselectWeapon();
                     aqt->state |= 4;
                 }
                 if ((aqt->act_exec & PedInstance::ai_aNonFinishable) != 0)
@@ -1627,7 +1756,7 @@ bool PedInstance::animate(int elapsed, Mission *mission) {
                     if ((aqt->state & 12) != 0)
                         aqt->state &= ((65535 ^ 14));
                 }
-                if (actions_property_ != 0)
+                if (drop_actions_)
                     break;
 
                 if ((aqt->state & 256) != 0) {
@@ -1742,22 +1871,12 @@ PedInstance *Ped::createInstance(int map) {
  * Else he dies alone leaving his wepons on the ground.
  */
 void PedInstance::commit_suicide() {
-    if (health_ > 0) {
-        health_ = -1;
-        actions_property_ = 1;
-        switchActionStateTo(PedInstance::pa_smDead);
-        is_ignored_ = true;
-        setDrawnAnim(PedInstance::ad_DieAnim);
-        if (hasMinimumVersionOfMod(Mod::MOD_CHEST, Mod::MOD_V2)) {
-            destroyAllWeapons();
-            ShotClass explosion;
-            explosion.createExplosion(this, 512.0);
-            setDrawnAnim(PedInstance::ad_StandBurnAnim);
-            setTimeShowAnim(4000);
-        } else {
-            if (!weapons_.empty())
-                dropAllWeapons();
-        }
+    if (hasMinimumVersionOfMod(Mod::MOD_CHEST, Mod::MOD_V2)) {
+        // Having a chest v2 makes agent explodes
+        ShotClass::createExplosion(this, 512.0, 16, true);
+    } else {
+        // else he just shoot himself
+        ShotClass::make_self_shot(this);
     }
 }
 
@@ -1831,14 +1950,14 @@ PedInstance::PedInstance(Ped *ped, int m) : ShootableMovableMapObject(m),
     old_obj_group_def_(PedInstance::og_dmUndefined),
     obj_group_id_(0), old_obj_group_id_(0),
     drawn_anim_(PedInstance::ad_StandAnim),
-    sight_range_(0), selected_weapon_(-1), in_vehicle_(NULL),
+    sight_range_(0), in_vehicle_(NULL),
     owner_(NULL), persuasion_points_(0)
 {
     hold_on_.wayFree = 0;
     rcv_damage_def_ = MapObject::ddmg_Ped;
     major_type_ = MapObject::mjt_Ped;
     state_ = PedInstance::pa_smNone;
-    actions_property_ = 0;
+    drop_actions_ = false;
     is_our_ = false;
     
     adrenaline_  = new IPAStim(IPAStim::Adrenaline);
@@ -1848,6 +1967,12 @@ PedInstance::PedInstance(Ped *ped, int m) : ShootableMovableMapObject(m),
     tm_before_check_ = 1000;
     base_mod_acc_ = 0.1;
     last_firing_target_.desc = 0;
+    is_suiciding_ = false;
+
+    // Todo : adds a behaviour for the type of ped
+    pBehaviour_ = new fs_actions::NopeBehaviour();
+    currentAction_ = NULL;
+    nbShootInQueue_ = 0;
 }
 
 PedInstance::~PedInstance()
@@ -1861,6 +1986,10 @@ PedInstance::~PedInstance()
     perception_ = NULL;
     delete intelligence_;
     intelligence_ = NULL;
+
+    delete pBehaviour_;
+    pBehaviour_ = NULL;
+    destroyAllActions();
 }
 
 /*!
@@ -1870,8 +1999,8 @@ PedInstance::~PedInstance()
  */
 void PedInstance::initAsAgent(Agent *p_agent, unsigned int obj_group_id) {
     // not in all missions our agents health is 16, this fixes it
-    setHealth(16);
-    setStartHealth(16);
+    setHealth(kAgentMaxHealth);
+    setStartHealth(kAgentMaxHealth);
     while (p_agent->numWeapons()) {
         WeaponInstance *wi = p_agent->removeWeapon(0);
         addWeapon(wi);
@@ -2036,205 +2165,53 @@ bool PedInstance::inSightRange(MapObject *t) {
     return this->distanceTo(t) < sight_range_;
 }
 
-void PedInstance::setSelectedWeapon(int n) {
-
-    if (selected_weapon_ != -1) {
-        assert((size_t)selected_weapon_ < weapons_.size());
-        WeaponInstance *wi = weapons_[selected_weapon_];
-        if (wi->getWeaponType() == Weapon::EnergyShield) {
-            setRcvDamageDef(MapObject::ddmg_Ped);
-            wi->deactivate();
-        }
-        if (wi->getWeaponType() == Weapon::AccessCard)
-            rmEmulatedGroupDef(4, og_dmPolice);
-        desc_state_ &= (pd_smAll ^ (pd_smArmed | pd_smNoAmmunition));
+/*!
+ * Called when a weapon has been deselected.
+ * \param wi The deselected weapon
+ */
+void PedInstance::handleWeaponDeselected(WeaponInstance * wi) {
+    if (wi->getWeaponType() == Weapon::EnergyShield) {
+        setRcvDamageDef(MapObject::ddmg_Ped);
+        wi->deactivate();
     }
+    if (wi->getWeaponType() == Weapon::AccessCard)
+        rmEmulatedGroupDef(4, og_dmPolice);
+    desc_state_ &= (pd_smAll ^ (pd_smArmed | pd_smNoAmmunition));
+}
 
-    selected_weapon_ = n;
-    if (n != -1) {
-        assert((size_t)selected_weapon_ < weapons_.size());
-        WeaponInstance *wi = weapons_[selected_weapon_];
-
-        if (wi->usesAmmo()) {
-            if (wi->ammoRemaining() == 0) {
-                desc_state_ |= pd_smNoAmmunition;
-                return;
-            } else {
-                desc_state_ &= pd_smAll ^ pd_smNoAmmunition;
-            }
+/*!
+ * Called when a weapon has been selected.
+ * \param wi The selected weapon
+ */
+void PedInstance::handleWeaponSelected(WeaponInstance * wi) {
+    if (wi->usesAmmo()) {
+        if (wi->ammoRemaining() == 0) {
+            desc_state_ |= pd_smNoAmmunition;
+            return;
         } else {
             desc_state_ &= pd_smAll ^ pd_smNoAmmunition;
         }
-
-        if (wi->doesPhysicalDmg())
-            desc_state_ |= pd_smArmed;
-        else
-            desc_state_ &= pd_smAll ^ pd_smArmed;
-
-        if (wi->getWeaponType() == Weapon::EnergyShield) {
-            setRcvDamageDef(MapObject::ddmg_PedWithEnergyShield);
-            wi->activate();
-        }
-        if (wi->getWeaponType() == Weapon::AccessCard)
-            addEmulatedGroupDef(4, og_dmPolice);
-    }
-}
-
-bool PedInstance::selectRequiredWeapon(pedWeaponToUse *pw_to_use) {
-    WeaponInstance *wi = selectedWeapon();
-    // pair <rank, indx>
-    std::vector < std::pair<int, int> > found_weapons;
-    uint8 sz;
-
-    if (!pw_to_use) {
-        pw_to_use = &prefered_weapon_;
-    } else if (prefered_weapon_.desc != 5) {
-        // overriding selection to respect users choice
-        pw_to_use = &prefered_weapon_;
+    } else {
+        desc_state_ &= pd_smAll ^ pd_smNoAmmunition;
     }
 
-    bool found = false;
-    switch (pw_to_use->desc) {
-        case 2:
-            if (pw_to_use->wpn.wi == wi) {
-                found = true;
-            } else {
-                sz = weapons_.size();
-                for (uint8 i = 0; i < sz; ++i) {
-                    if (weapon(i) == wi) {
-                        setSelectedWeapon(i);
-                        found = true;
-                        break;
-                    }
-                }
-            }
-            break;
-        case 3:
-            sz = weapons_.size();
-            for (uint8 i = 0; i < sz; ++i) {
-                WeaponInstance *pWI = weapons_[i];
-                if (pWI->getWeaponType() == pw_to_use->wpn.wpn_type) {
-                    if (pWI->usesAmmo()) {
-                        if (pWI->ammoRemaining()) {
-                            found = true;
-                            setSelectedWeapon(i);
-                            break;
-                        }
-                    } else {
-                        found = true;
-                        setSelectedWeapon(i);
-                        break;
-                    }
-                }
-            }
-            break;
-        case 4:
-            sz = weapons_.size();
-            for (uint8 i = 0; i < sz; ++i) {
-                WeaponInstance *pWI = weapons_[i];
-                if (pWI->canShoot()
-                    && pWI->doesDmgStrict(pw_to_use->wpn.dmg_type))
-                {
-                    if (pWI->usesAmmo()) {
-                        if (pWI->ammoRemaining()) {
-                            found = true;
-                            found_weapons.push_back(std::make_pair(pWI->rank(),
-                                i));
-                        }
-                    } else {
-                        found = true;
-                        found_weapons.push_back(std::make_pair(pWI->rank(), i));
-                    }
-                }
-            }
-            break;
-        case 5:
-            sz = weapons_.size();
-            for (uint8 i = 0; i < sz; ++i) {
-                WeaponInstance *pWI = weapons_[i];
-                if (pWI->canShoot()
-                    && pWI->doesDmgNonStrict(pw_to_use->wpn.dmg_type))
-                {
-                    if (pWI->usesAmmo()) {
-                        if (pWI->ammoRemaining()) {
-                            found = true;
-                            found_weapons.push_back(std::make_pair(pWI->rank(), i));
-                        }
-                    } else {
-                        found = true;
-                        found_weapons.push_back(std::make_pair(pWI->rank(), i));
-                    }
-                }
-            }
-            break;
+    if (wi->doesPhysicalDmg())
+        desc_state_ |= pd_smArmed;
+    else
+        desc_state_ &= pd_smAll ^ pd_smArmed;
+
+    switch(wi->getWeaponType()) {
+    case Weapon::EnergyShield:
+        setRcvDamageDef(MapObject::ddmg_PedWithEnergyShield);
+        wi->activate();
+        break;
+    case Weapon::AccessCard:
+        addEmulatedGroupDef(4, og_dmPolice);
+        break;
+    case Weapon::MediKit:
+        wi->activate();
+        break;
     }
-
-    if (!found_weapons.empty()) {
-        int best_rank = -1;
-        int indx = -1;
-        if (pw_to_use->use_ranks) {
-            sz = found_weapons.size();
-            for (uint8 i = 0; i < sz; ++i) {
-                if (best_rank < found_weapons[i].first) {
-                    best_rank = found_weapons[i].first;
-                    indx = found_weapons[i].second;
-                }
-            }
-            setSelectedWeapon(indx);
-        } else
-            setSelectedWeapon(found_weapons[0].second);
-    }
-    return found;
-}
-
-void PedInstance::selectNextWeapon() {
-    if (selected_weapon_ != -1) {
-        int nextWeapon = -1;
-        WeaponInstance *cur_sel_weapon = (WeaponInstance *)weapon(selected_weapon_);
-
-        if (cur_sel_weapon) {
-            for (int i = 0; i < numWeapons(); ++i) {
-                WeaponInstance * wi = weapons_[i];
-                if (i != selected_weapon_ && wi->usesAmmo() && wi->ammoRemaining()
-                        && wi->getWeaponType() == cur_sel_weapon->getWeaponType())
-                {
-                    if (nextWeapon == -1)
-                        nextWeapon = i;
-                    else {
-                        if (wi->ammoRemaining()
-                            < weapon(nextWeapon)->ammoRemaining())
-                        {
-                            nextWeapon = i;
-                        }
-                    }
-                }
-            }
-            if (nextWeapon == -1) {
-                for (int i = 0; i < numWeapons(); ++i) {
-                    WeaponInstance * wi = weapons_[i];
-                    if (i != selected_weapon_ && wi->usesAmmo() && wi->ammoRemaining()
-                            && wi->doesDmgNonStrict(cur_sel_weapon->dmgType()))
-                    {
-                        if (nextWeapon == -1)
-                            nextWeapon = i;
-                        else {
-                            if (wi->ammoRemaining()
-                                < weapon(nextWeapon)->ammoRemaining())
-                            {
-                                nextWeapon = i;
-                            }
-                        }
-                    }
-                }
-            }
-            if (nextWeapon != -1)
-                setSelectedWeapon(nextWeapon);
-        }
-
-        if (nextWeapon == -1)
-            selectRequiredWeapon();
-    } else
-        selectRequiredWeapon();
 }
 
 void PedInstance::dropWeapon(int n) {
@@ -2247,7 +2224,7 @@ void PedInstance::dropWeapon(WeaponInstance *wi) {
     bool upd_selected = selected_weapon_ != -1;
 
     if (selectedWeapon() == wi) {
-        setSelectedWeapon(-1);
+        deselectWeapon();
         upd_selected = false;
     }
     for (int i = 0; i < (int)weapons_.size(); ++i)
@@ -2273,7 +2250,7 @@ void PedInstance::dropWeapon(WeaponInstance *wi) {
 void PedInstance::dropAllWeapons() {
 
     setRcvDamageDef(MapObject::ddmg_Ped);
-    setSelectedWeapon(-1);
+    deselectWeapon();
     Mission *m = g_Session.getMission();
     uint8 twd = m->mtsurfaces_[tile_x_ + m->mmax_x_ * tile_y_
         + m->mmax_m_xy * tile_z_].twd;
@@ -2555,12 +2532,14 @@ bool PedInstance::handleDamage(ShootableMapObject::DamageInflictType *d) {
 
     if (health_ <= 0) {
         health_ = 0;
-        actions_property_ = 1;
+        drop_actions_ = true;
+        clearDestination();
+        destroyAllActions();
         switchActionStateTo(PedInstance::pa_smDead);
         if ((desc_state_ & pd_smControlled) != 0 && owner_)
             ((PedInstance *)owner_)->rmvPersuaded(this);
 
-        switch ((unsigned int)d->dtype) {
+        switch (d->dtype) {
             case MapObject::dmg_Bullet:
                 setDrawnAnim(PedInstance::ad_DieAnim);
                 dropAllWeapons();
@@ -2581,12 +2560,22 @@ bool PedInstance::handleDamage(ShootableMapObject::DamageInflictType *d) {
                 destroyAllWeapons();
                 setTimeShowAnim(4000);
                 break;
+            case MapObject::dmg_Explosion_Suicide:
+                if (is_suiciding()) {
+                    set_is_suiciding(false);
+                    setDrawnAnim(PedInstance::ad_StandBurnAnim);
+                    destroyAllWeapons();
+                    setTimeShowAnim(4000);
+                    break;
+                }
+                // If the agent was not suiciding himself
+                // he is not burnt but dies as a normal hit
             case MapObject::dmg_Hit:
                 setDrawnAnim(PedInstance::ad_HitAnim);
                 dropAllWeapons();
                 break;
         }
-        is_ignored_ = true;
+
         // send an event to alert agent died
         if (isOurAgent()) {
             GameEvent evt;
@@ -2603,7 +2592,7 @@ bool PedInstance::handleDamage(ShootableMapObject::DamageInflictType *d) {
 }
 
 void PedInstance::destroyAllWeapons() {
-    setSelectedWeapon(-1);
+    deselectWeapon();
     while (!weapons_.empty()) {
         WeaponInstance * w = removeWeapon(0);
         w->setMap(-1);
@@ -2646,40 +2635,52 @@ bool PedInstance::isInEmulatedGroupDef(PedInstance::Mmuu32_t &r_egd,
     return emulated_group_defs_.isIn_All(r_egd);
 }
 
-bool PedInstance::checkHostileIs(ShootableMapObject *obj,
+/*!
+ * Returns true if the given object is considered hostile by this Ped.
+ * If object is a Vehicle, check if it contains hostiles inside.
+ * If it is another Ped, check if he is a friend or in a opposite group
+ * \param obj The object whom hostility is being evaluated
+ * \param hostile_desc_alt
+ * \return true if object is considered hostile
+ */
+bool PedInstance::isHostileTo(ShootableMapObject *obj,
     unsigned int hostile_desc_alt)
 {
-    bool hostile_rsp = false;
-    bool friend_is = false;
+    bool isHostile = false;
 
     if (obj->majorType() == MapObject::mjt_Vehicle) {
-        hostile_rsp = ((VehicleInstance *)obj)->checkHostilesInside(
+        Vehicle *pVehicle = static_cast<Vehicle *>(obj);
+        isHostile = pVehicle->containsHostilesForPed(
             this, hostile_desc_alt);
     } else if (obj->majorType() == MapObject::mjt_Ped) {
-        if (checkFriendIs((PedInstance *)obj))
-            friend_is = true;
-        if (((PedInstance *)obj)->emulatedGroupDefsEmpty()) {
-            hostile_rsp =
-                isInEnemyGroupDef(((PedInstance *)obj)->objGroupID(),
-                ((PedInstance *)obj)->objGroupDef());
-        } else {
-            hostile_rsp =
-                ((PedInstance *)obj)->isInEmulatedGroupDef(enemy_group_defs_);
-        }
-        if (!(hostile_rsp || friend_is)) {
-            if (hostile_desc_alt == PedInstance::pd_smUndefined)
-                hostile_desc_alt = hostile_desc_;
-            hostile_rsp = (((PedInstance *)obj)->descStateMasks()
-                & hostile_desc_alt) != 0;
+        PedInstance *pPed = static_cast<PedInstance *>(obj);
+        if (!isFriendWith(pPed)) {
+            // Ped is not a declared friend, check its group
+            if ((pPed)->emulatedGroupDefsEmpty()) {
+                isHostile =
+                    isInEnemyGroupDef(pPed->objGroupID(), pPed->objGroupDef());
+            } else {
+                isHostile = pPed->isInEmulatedGroupDef(enemy_group_defs_);
+            }
+            if (!isHostile) {
+                if (hostile_desc_alt == PedInstance::pd_smUndefined)
+                    hostile_desc_alt = hostile_desc_;
+                isHostile = (pPed->descStateMasks() & hostile_desc_alt) != 0;
+            }
         }
     }
 
-    return hostile_rsp;
+    return isHostile;
 }
 
-bool PedInstance::checkFriendIs(PedInstance *p) {
-    // Friend can be neutral to be sure that object is hostile use
-    // checkHostileIs and check hostiles_found_(isInHostilesFound)
+/*!
+ * Friend can be neutral to be sure that object is hostile use
+ * isHostileTo and check hostiles_found_(isInHostilesFound)
+ * \param p
+ * \return True if other ped is considered a friend.
+ */
+bool PedInstance::isFriendWith(PedInstance *p) {
+    // Search ped in friends
     if (friends_found_.find(p) != friends_found_.end())
         return true;
     if (p->isInEmulatedGroupDef(obj_group_id_, obj_group_def_)) {
@@ -2712,9 +2713,9 @@ void PedInstance::verifyHostilesFound(Mission *m) {
         ShootableMapObject *smo = it->first;
         double distTo = 0;
         if (smo->isDead() || (smo->majorType() == MapObject::mjt_Ped
-            && checkFriendIs((PedInstance *)(smo)))
+            && isFriendWith((PedInstance *)(smo)))
             || (smo->majorType() == MapObject::mjt_Vehicle
-            && ((VehicleInstance *)smo)->checkHostilesInside(this, hostile_desc_))
+            && ((VehicleInstance *)smo)->containsHostilesForPed(this, hostile_desc_))
             || (m->inRangeCPos(&cur_xyz, &smo, NULL, false, false,
             check_rng, &distTo) != 1))
         {
@@ -2727,7 +2728,11 @@ void PedInstance::verifyHostilesFound(Mission *m) {
     }
 }
 
-int PedInstance::getSpeed()
+/*! 
+ * Movement speed calculated from base speed, mods, weight of inventory,
+ * ipa, etc.
+ */
+int PedInstance::getDefaultSpeed()
 {
     int speed_new = base_speed_;
 
@@ -2841,17 +2846,6 @@ bool PedInstance::isPersuaded()
 {
     return (desc_state_ & pd_smControlled) != 0
         && obj_group_id_ == g_Session.getMission()->playersGroupID();
-}
-
-void PedInstance::updtPreferedWeapon() {
-    if (selected_weapon_ != -1) {
-        WeaponInstance *wi = weapons_[selected_weapon_];
-        prefered_weapon_.desc = 2;
-        prefered_weapon_.wpn.wi = wi;
-    } else {
-        prefered_weapon_.desc = 5;
-        prefered_weapon_.wpn.dmg_type = MapObject::dmg_Physical;
-    }
 }
 
 bool PedInstance::canPersuade(int points) {

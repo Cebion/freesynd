@@ -35,33 +35,33 @@
 
 class SpriteManager;
 class ConfigFile;
+class MenuManager;
+class SoundManager;
+
+/*!
+ * This abstract class is responsible for instanciating menus from a given id.
+ */
+class MenuFactory {
+public:
+    virtual Menu * createMenu(const int menuId) = 0;
+    void setMenuManager(MenuManager *pManager) { pManager_ = pManager; }
+
+protected:
+    MenuManager *pManager_;
+};
 
 /*!
  * Menu manager class.
  */
 class MenuManager {
 public:
-    /*!
-     * Available language in the game.
-     */
-    enum FS_Lang {
-        ENGLISH = 0,
-        FRENCH = 1,
-        ITALIAN = 2,
-        GERMAN = 3
-    };
-
-    MenuManager();
+    MenuManager(MenuFactory *pFactory, SoundManager *pGameSounds);
     ~MenuManager();
 
     bool initialize(bool loadIntroFont);
 
     //! Destroy all menus and resources
     void destroy();
-
-    void setLanguage(FS_Lang lang);
-    std::string getMessage(const std::string & id);
-    void getMessage(const std::string & id, std::string & msg);
 
     //! Return the menu sprites manager
     SpriteManager &menuSprites() {
@@ -110,8 +110,6 @@ public:
     //! Returns true if a menu is being displayed
     bool showingMenu() { return current_ != NULL; }
 
-    FS_Lang currLanguage(void) {return curr_language_; }
-
     void resetSinceMouseDown() {
         since_mouse_down_ = 0;
         mouseup_was_ = false;
@@ -134,6 +132,8 @@ protected:
     void changeCurrentMenu();
 
 protected:
+    /** The menu factory.*/
+    MenuFactory *pFactory_;
     /** The list of currently loaded menus.*/
     std::map<int, Menu *> menus_;
     /** The current menu being displayed.*/
@@ -148,9 +148,6 @@ protected:
     bool needBackground_;
     /*! Dirty rects list. */
     DirtyList   dirtyList_;
-    /*! Language file. */
-    ConfigFile  *language_;
-    FS_Lang curr_language_;
 
     /*! Sprite manager for menu sprites.*/
     SpriteManager menuSprites_;
@@ -158,6 +155,7 @@ protected:
     SpriteManager *pIntroFontSprites_;
     /*! Font manager.*/
     FontManager fonts_;
+    SoundManager *pGameSounds_;
 
     /*! Time since last mouse down event without mouseup*/
     int32 since_mouse_down_;

@@ -26,12 +26,17 @@
 
 #include <stdio.h>
 #include <assert.h>
-#include "app.h"
+
 #include "debriefmenu.h"
+#include "menus/gamemenuid.h"
 #include "mission.h"
 #include "core/squad.h"
+#include "core/gamecontroller.h"
+#include "core/gamesession.h"
+#include "system.h"
+#include "gfx/screen.h"
 
-DebriefMenu::DebriefMenu(MenuManager *m) : Menu(m, MENU_DEBRIEF, MENU_MAIN, "mdebrief.dat",
+DebriefMenu::DebriefMenu(MenuManager *m) : Menu(m, fs_game_menus::kMenuIdDebrief, fs_game_menus::kMenuIdMain, "mdebrief.dat",
      "mdeout.dat") {
     int y = 35;
     int right_x = 310;
@@ -40,7 +45,7 @@ DebriefMenu::DebriefMenu(MenuManager *m) : Menu(m, MENU_DEBRIEF, MENU_MAIN, "mde
 
     addStatic(85, y, 545, "#DEBRIEF_TITLE", FontManager::SIZE_4, false);
     y = 100;
-    menu_manager_->getMessage("DEBRIEF_SUBTITLE", str);
+    getMessage("DEBRIEF_SUBTITLE", str);
     addStatic(left_x, y, str.c_str(), FontManager::SIZE_2, true);
     separatorSize_ = getMenuFont(FontManager::SIZE_2)->textWidth(str.c_str(), false);
 
@@ -85,8 +90,8 @@ DebriefMenu::DebriefMenu(MenuManager *m) : Menu(m, MENU_DEBRIEF, MENU_MAIN, "mde
     y += 14;
     txtNewWeap2Id_ = addStatic(left_x, y, "", FontManager::SIZE_2, true);
 
-    addOption(16, 346, 129, 25, "#MENU_ACC_BUT", FontManager::SIZE_2, MENU_MAP);
-    addOption(500, 347,  128, 25, "#MENU_MAIN_BUT", FontManager::SIZE_2, MENU_MAIN);
+    addOption(16, 346, 129, 25, "#MENU_ACC_BUT", FontManager::SIZE_2, fs_game_menus::kMenuIdMap);
+    addOption(500, 347,  128, 25, "#MENU_MAIN_BUT", FontManager::SIZE_2, fs_game_menus::kMenuIdMain);
 }
 
 /*!
@@ -147,12 +152,12 @@ void DebriefMenu::updateStatsFields(Mission *pMission) {
 void DebriefMenu::checkNewWeaponFound() {
 
     for (size_t i=0; i<AgentManager::kMaxSlot; i++) {
-        Agent *pAgent = g_Session.agents().squadMember(i);
+        Agent *pAgent = g_gameCtrl.agents().squadMember(i);
         if (pAgent) {
             for (int wi=0; wi < pAgent->numWeapons(); wi++) {
                 Weapon *pWeapon = pAgent->weapon(wi)->getWeaponClass();
 
-                if (!g_App.weapons().isAvailable(pWeapon)) {
+                if (!g_gameCtrl.weapons().isAvailable(pWeapon)) {
                     if (g_Session.researchManager().handleWeaponDiscovered(pWeapon)) {
                         getStatic(txtNewWeap1Id_)->setText("#DEBRIEF_WEAP_FOUND1");
                         getStatic(txtNewWeap2Id_)->setText("#DEBRIEF_WEAP_FOUND2");
@@ -196,7 +201,7 @@ void DebriefMenu::handleGameEvent(GameEvent evt) {
              assert(wt);
 
              // Get weapon
-             Weapon *pWeap = g_App.weapons().getWeapon(wt);
+             Weapon *pWeap = g_gameCtrl.weapons().getWeapon(wt);
              assert(pWeap);
 
              // Draw name of it

@@ -100,6 +100,22 @@ void Map::mapDimensions(int *x, int *y, int *z)
     *z = maxZ();
 }
 
+/*!
+ * Clip x,y,z to map dimensions.
+ */
+void Map::adjXYZ(int &x, int &y, int &z) {
+    if (x < 0)
+        x = 0;
+    if (y < 0)
+        y = 0;
+    if (z < 0 || z >= maxZ())
+        z = 0;
+    if (x >= maxX())
+        x = maxX() - 1;
+    if (y >= maxY())
+        y = maxY() - 1;
+}
+
 float scalexPx = 256.0f;
 float scalexPy = 256.0f;
 float scaleyPx = 256.0f;
@@ -219,110 +235,6 @@ void Map::patchMap(int x, int y, int z, uint8 tileNum)
     a_tiles_[(y * max_x_ + x) * max_z_ + z] = tile_manager_->getTile(tileNum);
 }
 
-
-int topz = -1;
-
-void Map::draw(int scrollX, int scrollY, MapHelper * helper)
-{
-    // TODO: after a lot of attempts to fix this, map drawing remains buggy
-    if (scrollX + (g_Screen.gameScreenWidth() - g_Screen.gameScreenLeftMargin()) >= map_width_)
-        scrollX = map_width_ - (g_Screen.gameScreenWidth() - g_Screen.gameScreenLeftMargin());
-    if (scrollY + g_Screen.gameScreenHeight() >= map_height_)
-        scrollY = map_height_ - g_Screen.gameScreenHeight();
-
-    MapTilePoint mtp = screenToTilePoint(scrollX, scrollY);
-    int sw = mtp.tx;
-    int chk = g_Screen.gameScreenWidth() / (TILE_WIDTH / 2) + 2
-        + g_Screen.gameScreenHeight() / (TILE_HEIGHT / 3) + max_z_ * 2;
-    int swm = sw + chk;
-    int sh = mtp.ty - 8;
-#if 0
-    // HACK for map dump
-    sh = 0;
-#endif
-    int shm = sh + chk;
-
-    if (topz == -1)
-        topz = max_z_;
-
-#ifdef EXECUTION_SPEED_TIME
-    printf("---------------------------");
-    int measure_ticks = SDL_GetTicks();
-    printf("start time %i.%i\n", measure_ticks/1000, measure_ticks%1000);
-#endif
-
-    helper->createFastKeys(sw, sh, swm, shm);
-    int cmw = scrollX + g_Screen.gameScreenWidth() - g_Screen.gameScreenLeftMargin() + 128;
-    int cmh = scrollY + g_Screen.gameScreenHeight() + 128;
-    int cmx = scrollX - g_Screen.gameScreenLeftMargin();
-     //  z = 0 - is minimap data and mapdata
-    int chky = sh < 0 ? 0 : sh;
-    int zr = shm + max_z_ + 1;
-    for (int inc = 0; inc < zr; ++inc) {
-        int ye = sh + inc;
-        int ys = ye - max_z_ - 2;
-        int z = max_z_ + 1;
-        for (int yb = ys; yb < ye; ++yb) {
-            if (yb < 0 || yb < sh || yb >= shm) {
-                --z;
-                continue;
-            }
-            int h = yb;
-            for (int w = sw; h >= chky && w < max_x_; ++w) {
-                if (w < 0 || h >= max_y_) {
-                    --h;
-                    continue;
-                }
-                int screen_w = (max_x_ + (w - h)) * (TILE_WIDTH / 2);
-                //int screen_h = (max_z_ + w + h) * (TILE_HEIGHT / 3);
-                int coord_h = ((max_z_ + w + h) - (z - 1)) * (TILE_HEIGHT / 3);
-                if (screen_w >= scrollX - TILE_WIDTH * 2
-                    && screen_w + TILE_WIDTH * 2 < cmw
-                    && coord_h >= scrollY - TILE_HEIGHT * 2
-                    && coord_h + TILE_HEIGHT * 2 < cmh)
-                {
-#if 0
-                    if (z > 2)
-                        continue;
-#endif
-                    if (z < max_z_) {
-                        Tile *p_tile = a_tiles_[(h * max_x_ + w) * max_z_ + z];
-                        if (p_tile->notTransparent()) {
-                            int dx = 0, dy = 0;
-                            if (screen_w - scrollX < 0)
-                                dx = -(screen_w - scrollX);
-                            if (coord_h - scrollY < 0)
-                                dy = -(coord_h - scrollY);
-                            if (dx < TILE_WIDTH && dy < TILE_HEIGHT) {
-                                p_tile->drawTo((uint8*)g_Screen.pixels(),
-                                    g_Screen.gameScreenWidth(),
-                                    g_Screen.gameScreenHeight(),
-                                    screen_w - cmx,
-                                    coord_h - scrollY);
-                            }
-                        }
-                    }
-                    if (z - 1 >= 0) {
-                        helper->drawAt(w, h, z - 1,
-                            screen_w - cmx + TILE_WIDTH / 2,
-                            coord_h - scrollY + TILE_HEIGHT / 3 * 2);
-                    }
-                }
-                --h;
-            }
-            --z;
-        }
-    }
-
-#ifdef EXECUTION_SPEED_TIME
-    printf("+++++++++++++++++++++++++++");
-    int measure_ticks_end = SDL_GetTicks();
-    printf("end time %i.%i,%i\n", measure_ticks_end/1000, measure_ticks_end%1000,
-        measure_ticks_end - measure_ticks);
-#endif
-
-}
-
 const uint8 MiniMap::kOverlayNone = 0;
 const uint8 MiniMap::kOverlayOurAgent = 1;
 const uint8 MiniMap::kOverlayEnemyAgent = 2;
@@ -387,31 +299,4 @@ void MiniMap::setTarget(MapObject *pTarget) {
 //! Clear the target source
 void MiniMap::clearTarget() {
     p_target_ = NULL;
-}
-//! Defines the evacuation point on the minimap
-void MiniMap::setEvacuationPoint(const toDefineXYZ &evacPt) {
-    evacPt_.x = evacPt.x;
-    evacPt_.y = evacPt.y;
-    evacPt_.z = evacPt.z;
-}
-
-//! Return the evacuation position
-void MiniMap::evacuationPoint(toDefineXYZ &evacPt) {
-    evacPt.x = evacPt_.x;
-    evacPt.y = evacPt_.y;
-    evacPt.z = evacPt_.z;
-}
-
-//! Return the target position
-MapTilePoint MiniMap::targetPosition() {
-    MapTilePoint mtp;
-    if (p_target_) {
-        // TODO MapObject should already have a MapTilePoint
-        mtp.tx = p_target_->tileX();
-        mtp.ty = p_target_->tileY();
-        mtp.tz = p_target_->tileZ();
-        mtp.ox = p_target_->offX();
-        mtp.oy = p_target_->offY();
-    }
-    return mtp; 
 }

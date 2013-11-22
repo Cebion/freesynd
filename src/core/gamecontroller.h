@@ -33,6 +33,10 @@
 
 #include "utils/singleton.h"
 #include "core/gameevent.h"
+#include "agentmanager.h"
+#include "weaponmanager.h"
+#include "modmanager.h"
+#include "missionmanager.h"
 
 class Mission;
 
@@ -60,20 +64,54 @@ class GameController : public Singleton < GameController > {
     //! Sends the event to the listeners
     void fireGameEvent(GameEvent & evt);
 
+    //*************************************
+    // Managers
+    //*************************************
+    AgentManager &agents() {
+        return agents_;
+    }
+
+    WeaponManager &weapons() {
+        return weapons_;
+    }
+
+    ModManager &mods() {
+        return mods_;
+    }
+
+    MissionManager &missions() {
+        return missions_;
+    }
+
+    //*************************************
+    // Game services
+    //*************************************
     //! Changes the user preferences (from the config menu)
     void change_user_infos(const char *company_name, const char *player_name, 
                             int logo, int color);
     //! Checks if mission is completed and updates game state
     void handle_mission_end(Mission *p_mission);
 private:
-    /*! List of listeners for game stream events.*/
-    std::list<GameEventListener *> game_listeners_;
-    /*! List of listeners for mission stream events.*/
-    std::list<GameEventListener *> mission_listeners_;
     //! Simulates syndicates fighting for countries
     void simulate_enemy_moves();
     // helper method
     int get_nb_mvt_for_active_synds(int nb_active_synds);
+
+private:
+    /*!
+     * Manager of agent.
+     */
+    AgentManager agents_;
+    /*! Manager of weapons.*/
+    WeaponManager weapons_;
+    /*! Manager of mods.*/
+    ModManager mods_;
+    /*! Manager of missions.*/
+    MissionManager missions_;
+    /*! List of listeners for game stream events.*/
+    std::list<GameEventListener *> game_listeners_;
+    /*! List of listeners for mission stream events.*/
+    std::list<GameEventListener *> mission_listeners_;
 };
 
 #define g_gameCtrl    GameController::singleton()

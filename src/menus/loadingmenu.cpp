@@ -26,10 +26,16 @@
 
 #include <stdio.h>
 #include <assert.h>
-#include "app.h"
-#include "loadingmenu.h"
 
-LoadingMenu::LoadingMenu(MenuManager * m):Menu(m, MENU_LOADING, MENU_MAIN),
+#include "loadingmenu.h"
+#include "gfx/screen.h"
+#include "mission.h"
+#include "core/gamecontroller.h"
+#include "core/gamesession.h"
+#include "menus/menumanager.h"
+#include "menus/gamemenuid.h"
+
+LoadingMenu::LoadingMenu(MenuManager * m):Menu(m, fs_game_menus::kMenuIdLoading, fs_game_menus::kMenuIdMain),
     timer_(2000)
 {
     isCachable_ = false;
@@ -42,15 +48,14 @@ void LoadingMenu::handleTick(int elapsed)
     if (do_load_) {
         // Loads mission
         int id = g_Session.getSelectedBlock().mis_id;
-        Mission *pMission = g_App.missions().loadMission(id);
+        Mission *pMission = g_gameCtrl.missions().loadMission(id);
         assert(pMission != NULL);
-        pMission->setSurfaces();
         g_Session.setMission(pMission);
 
         do_load_ = false;
     }
 
     if (timer_.update(elapsed)) {
-        menu_manager_->gotoMenu(Menu::MENU_GAMEPLAY);
+        menu_manager_->gotoMenu(fs_game_menus::kMenuIdGameplay);
     }
 }

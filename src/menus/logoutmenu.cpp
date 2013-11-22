@@ -25,9 +25,10 @@
  ************************************************************************/
 
 #include "logoutmenu.h"
+#include "menus/gamemenuid.h"
 #include "app.h"
 
-LogoutMenu::LogoutMenu(MenuManager * m):Menu(m, MENU_LOGOUT, MENU_MAIN),
+LogoutMenu::LogoutMenu(MenuManager * m):Menu(m, kMenuIdLogout, fs_game_menus::kMenuIdMain),
 tick_count_(0)
 {
     isCachable_ = false;

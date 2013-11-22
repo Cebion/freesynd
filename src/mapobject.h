@@ -7,6 +7,7 @@
  *   Copyright (C) 2006  Trent Waddington <qg@biodome.org>              *
  *   Copyright (C) 2006  Tarjei Knapstad <tarjei.knapstad@gmail.com>    *
  *   Copyright (C) 2010  Bohdan Stelmakh <chamel@users.sourceforge.net> *
+ *   Copyright (C) 2013  Benoit Blancard <benblan@users.sourceforge.net>*
  *                                                                      *
  *    This program is free software;  you can redistribute it and / or  *
  *  modify it  under the  terms of the  GNU General  Public License as  *
@@ -43,20 +44,21 @@ public:
     virtual ~MapObject() {}
 
     virtual void draw(int x, int y) = 0;
-    typedef enum {
+    enum DamageType {
         dmg_None = 0x0000,
         dmg_Bullet = 0x0001,
         dmg_Laser = 0x0002,
         dmg_Burn = 0x0004,
         dmg_Explosion = 0x0008,
+        dmg_Explosion_Suicide = 0x0100, // Explosion of suiciding agent
         dmg_Hit = 0x0010,
-        dmg_Physical = (dmg_Bullet | dmg_Laser | dmg_Burn | dmg_Explosion | dmg_Hit),
+        dmg_Physical = (dmg_Bullet | dmg_Laser | dmg_Burn | dmg_Explosion | dmg_Hit | dmg_Explosion_Suicide),
         dmg_Persuasion = 0x0020,
         dmg_Heal = 0x0040,
         dmg_Panic = 0x0080,
         dmg_Mental = (dmg_Persuasion | dmg_Panic),
         dmg_All = 0xFFFF
-    } DamageType;
+    };
 
     typedef enum {
         ddmg_Invulnerable = dmg_None,
@@ -118,6 +120,20 @@ public:
                 && other->off_z_ == off_z_;
     }
 
+    /*!
+     * Return true is given object is closer to this object than the
+     * given distance.
+     * \param pObject The other object.
+     * \param distance
+     */
+    bool isCloseTo(MapObject *pObject, int distance) {
+        int cx = tile_x_ * 256 + off_x_ - (pObject->tile_x_ * 256 + pObject->off_x_);
+        int cy = tile_y_ * 256 + off_y_ - (pObject->tile_y_ * 256 + pObject->off_y_);
+        int cz = tile_z_ * 128 + off_z_ - (pObject->tile_z_ * 128 + pObject->off_z_);
+
+        return (cx * cx + cy * cy + cz * cz) < (distance * distance);
+    }
+
     double distanceTo(MapObject *t) {
         int cx = tile_x_ * 256 + off_x_ - (t->tile_x_ * 256 + t->off_x_);
         int cy = tile_y_ * 256 + off_y_ - (t->tile_y_ * 256 + t->off_y_);
@@ -151,8 +167,6 @@ public:
     }
 
     virtual bool animate(int elapsed);
-
-    virtual bool useTargetCursor() { return false; }
 
     void setSubType(int objSubType) { sub_type_ = objSubType; }
     int getSubType() { return sub_type_; }
@@ -234,9 +248,9 @@ public:
     unsigned int stateMasks() { return state_; }
 
     void offzOnStairs(uint8 twd);
+
 #ifdef _DEBUG
-    void setDebugID(uint32 id) { debug_id_ = id; }
-    uint32 getDebugID() { return debug_id_; }
+    uint32 getDebugID() { return debugId_; }
 #endif
 
 protected:
@@ -280,7 +294,8 @@ protected:
     void addOffs(int &x, int &y);
 #ifdef _DEBUG
 private:
-    uint32 debug_id_;
+    static uint32 debugIdCnt;
+    uint32 debugId_;
 #endif
 };
 
@@ -332,6 +347,21 @@ protected:
  */
 class ShootableMapObject : public MapObject {
 public:
+    /*!
+     * This structure holds informations on the damage inflicted to a ShootableMapObject.
+     */
+    struct DamageInflictType {
+        //! The type of damage
+        DamageType dtype;
+        //! The value of the damage
+        int dvalue;
+        //! direction damage comes from, should be angle 256 degree based
+        int ddir;
+        //! The object that inflicted the damage
+        ShootableMapObject * d_owner;
+    };
+
+public:
     ShootableMapObject(int m);
     virtual ~ShootableMapObject() {}
 
@@ -360,13 +390,6 @@ public:
 
         start_health_ = n;
     }
-    typedef struct {
-        DamageType dtype;
-        int dvalue;
-        //! direction damage comes from, should be angle 256 degree based
-        int ddir;
-        ShootableMapObject * d_owner;
-    } DamageInflictType;
 
     virtual bool handleDamage(ShootableMapObject::DamageInflictType * d) {
         if (health_ <= 0 || rcv_damage_def_ == MapObject::ddmg_Invulnerable
@@ -392,9 +415,6 @@ public:
     ShootableMovableMapObject(int m);
     virtual ~ShootableMovableMapObject() {}
 
-    // only vehicles and peds for which this is true?
-    virtual bool useTargetCursor() { return true; }
-
     void setSpeed(int new_speed) {
         speed_ = new_speed;
     }
@@ -405,18 +425,22 @@ public:
     void setBaseSpeed(int bs) {
         base_speed_ = bs;
     }
-
+    /*!
+     * Clear path to destination and sets speed to 0.
+     */
     void clearDestination() {
-        dest_path_.clear();
-    }
-    void resetDest_Speed() {
         dest_path_.clear();
         speed_ = 0;
     }
 
+    //! Set the destination to reach at given speed
+    virtual bool setDestination(Mission *m, PathNode &node, int newSpeed = -1) = 0;
+
     //! checks whether final destination is same as pn
     bool checkFinalDest(PathNode& pn);
     bool isMoving() { return speed_ != 0 || !dest_path_.empty();}
+    //! Returns true if object currently has a destination point (ie it's arrived)
+    bool hasDestination() { return !dest_path_.empty(); }
     //! checks whether current position is same as pn
     bool checkCurrPos(PathNode &pn);
     //! checks whether current position is same as pn, tile only
@@ -446,9 +470,7 @@ public:
     virtual bool animate(int elapsed, Mission *obj) {
         return MapObject::animate(elapsed);
     }
-#ifdef _DEBUG
-    bool useTargetCursor() { return true; }
-#endif
+
     typedef enum {
         sttdoor_Closed = 0,
         sttdoor_Closing,

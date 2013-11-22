@@ -27,9 +27,12 @@
 #ifndef PEDMANAGER_H
 #define PEDMANAGER_H
 
+#include <vector>
+
 #include "common.h"
 #include "ped.h"
-#include <vector>
+#include "model/leveldata.h"
+
 
 /*!
  * Pedestrians manager class.
@@ -48,7 +51,7 @@ public:
         return peds_[n];
     }
 
-    PedInstance *loadInstance(LevelData::People & ped_data, uint16 ped_idx, int map);
+    PedInstance *loadInstance(const LevelData::People & ped_data, uint16 ped_idx, int map);
 
 protected:
     // TODO: remove this everywhere(?)

@@ -3,6 +3,7 @@
  *  FreeSynd - a remake of the classic Bullfrog game "Syndicate".       *
  *                                                                      *
  *   Copyright (C) 2012  Bohdan Stelmakh <chamel@users.sourceforge.net> *
+ *   Copyright (C) 2013  Benoit Blancard <benblan@users.sourceforge.net>*
  *                                                                      *
  *    This program is free software;  you can redistribute it and / or  *
  *  modify it  under the  terms of the  GNU General  Public License as  *
@@ -20,9 +21,107 @@
  *                                                                      *
  ************************************************************************/
 
-#include "common.h"
-#include "app.h"
+#include "ped.h"
+#include "core/gamecontroller.h"
 
+/*!
+ * Adds the given action to the list of actions.
+ * If appendAction is true, the action is added after all existing actions.
+ * Else existing actions are destroyed and new action becomes the only one.
+ * \param pAction The action to add
+ * \param appendAction If true action is append after all existing actions.
+ */
+void PedInstance::addAction(fs_actions::Action *pAction, bool appendAction) {
+    if (currentAction_ == NULL) {
+        currentAction_ = pAction;
+    } else if (appendAction) {
+        fs_actions::Action *pAct = currentAction_;
+        while(pAct->next()) {
+            pAct = pAct->next();
+        }
+        pAct->setNext(pAction);
+    } else {
+        destroyAllActions();
+        currentAction_ = pAction;
+    }
+}
+
+/*!
+ * Removes all actions.
+ * \param pAction
+ */
+void PedInstance::destroyAllActions() {
+    while (currentAction_ != NULL) {
+        fs_actions::Action *pNext = currentAction_->next();
+        delete currentAction_;
+        currentAction_ = pNext;
+    }
+}
+
+/*!
+ * Adds the action to walk.
+ * \param tpn Destination point
+ * \param origin Origin of action
+ * \param appendAction If true action is append after all existing actions.
+ */
+void PedInstance::addActionWalk(const PathNode &tpn, fs_actions::CreatOrigin origin, bool appendAction) {
+    fs_actions::WalkAction *action = new fs_actions::WalkAction(origin, tpn);
+    addAction(action, appendAction);
+}
+
+void PedInstance::addActionFollowPed(PedInstance *pPed) {
+    fs_actions::FollowAction *pAction = new fs_actions::FollowAction(pPed);
+    addAction(pAction, false);
+}
+
+/*!
+ * Adds the action to drop weapon.
+ * \param weaponIndex The index of the weapon to drop in the agent inventory.
+ * \param appendAction If true action is append after all existing actions.
+ */
+void PedInstance::addActionPutdown(uint8 weaponIndex, bool appendAction) {
+    fs_actions::PutdownWeaponAction *action = new fs_actions::PutdownWeaponAction(weaponIndex);
+    addAction(action, appendAction);
+}
+
+/*!
+ * Adds the action to pick up weapon.
+ * \param pWeapon the weapon to pick up.
+ * \param appendAction If true action is append after all existing actions.
+ */
+void PedInstance::addActionPickup(WeaponInstance *pWeapon, bool appendAction) {
+    // First go to weapon
+    fs_actions::WalkAction *action = new fs_actions::WalkAction(fs_actions::kOrigUser, pWeapon);
+    addAction(action, appendAction);
+    // Then pick it up
+    fs_actions::PickupWeaponAction *pPuAction = new fs_actions::PickupWeaponAction(pWeapon);
+    addAction(pPuAction, true);
+}
+
+/*!
+ * Sets or append action to enter the given vehicle.
+ * \param pVehicle
+ * \param appendAction If true action is append after all existing actions.
+ */
+void PedInstance::addActionEnterVehicle(Vehicle *pVehicle, bool appendAction) {
+    // First go to vehicle
+    fs_actions::WalkAction *action = new fs_actions::WalkAction(fs_actions::kOrigUser, (ShootableMapObject *) pVehicle);
+    addAction(action, appendAction);
+    // Then get in
+    fs_actions::EnterVehicleAction *enterAct = new fs_actions::EnterVehicleAction(pVehicle);
+    addAction(enterAct, true);
+}
+
+//! Adds action to drive vehicle to destination
+void PedInstance::addActionDriveVehicle(fs_actions::CreatOrigin origin, 
+        VehicleInstance *pVehicle, PathNode &destination, bool appendAction) {
+    fs_actions::DriveVehicleAction *pAction = new fs_actions::DriveVehicleAction(origin, pVehicle, destination);
+    addAction(pAction, appendAction);
+}
+
+void PedInstance::addActionShootAt(PathNode &pn) {
+    printf("addActionShootAt not implemented\n");
+}
 
 void PedInstance::createActQStanding(actionQueueGroupType &as) {
     as.state = 1;
@@ -105,7 +204,7 @@ void PedInstance::createActQHit(actionQueueGroupType &as, PathNode *tpn,
 
 bool PedInstance::createActQFiring(actionQueueGroupType &as, PathNode *tpn,
     ShootableMapObject *tsmo, bool forced_shot, uint32 make_shots, 
-    pedWeaponToUse *pw_to_use, int32 value)
+    WeaponSelectCriteria *pw_to_use, int32 value)
 {
     // TODO: review, if no weapon found or selected assume physical damage?
     // should be possible to create without a target
@@ -117,39 +216,39 @@ bool PedInstance::createActQFiring(actionQueueGroupType &as, PathNode *tpn,
     Weapon *pWeapon = NULL;
     if (pw_to_use) {
         switch (pw_to_use->desc) {
-            case 1:
-                pw_to_use->wpn.wi = weapon(pw_to_use->wpn.indx);
-                can_shoot = pw_to_use->wpn.wi->canShoot();
-                does_phys_dmg = pw_to_use->wpn.wi->doesPhysicalDmg();
-                pw_to_use->desc = 2;
+            case WeaponHolder::WeaponSelectCriteria::kCritIndex:
+                pw_to_use->criteria.wi = weapon(pw_to_use->criteria.indx);
+                can_shoot = pw_to_use->criteria.wi->canShoot();
+                does_phys_dmg = pw_to_use->criteria.wi->doesPhysicalDmg();
+                pw_to_use->desc = WeaponHolder::WeaponSelectCriteria::kCritPointer;
                 break;
-            case 2:
+            case WeaponHolder::WeaponSelectCriteria::kCritPointer:
                 // pointer
-                can_shoot = pw_to_use->wpn.wi->canShoot();
-                does_phys_dmg = pw_to_use->wpn.wi->doesPhysicalDmg();
+                can_shoot = pw_to_use->criteria.wi->canShoot();
+                does_phys_dmg = pw_to_use->criteria.wi->doesPhysicalDmg();
                 break;
-            case 3:
+            case WeaponHolder::WeaponSelectCriteria::kCritWeaponType:
                 // weapon type
-                pWeapon = g_App.weapons().getWeapon(pw_to_use->wpn.wpn_type);
+                pWeapon = g_gameCtrl.weapons().getWeapon(pw_to_use->criteria.wpn_type);
                 can_shoot = pWeapon->canShoot();
                 does_phys_dmg = pWeapon->doesPhysicalDmg();
                 break;
-            case 4:
+            case WeaponHolder::WeaponSelectCriteria::kCritDamageStrict:
                 // strict damage type
-                if(!g_App.weapons().checkDmgTypeCanShootStrict(
-                    pw_to_use->wpn.dmg_type, can_shoot)) {
+                if(!g_gameCtrl.weapons().checkDmgTypeCanShootStrict(
+                    pw_to_use->criteria.dmg_type, can_shoot)) {
                     return false;
                 }
-                does_phys_dmg = (pw_to_use->wpn.dmg_type
+                does_phys_dmg = (pw_to_use->criteria.dmg_type
                     & MapObject::dmg_Physical) != 0;
                 break;
-            case 5:
+            case WeaponHolder::WeaponSelectCriteria::kCritDamageNonStrict:
                 // non-strict damage type
-                if(!g_App.weapons().checkDmgTypeCanShootNonStrict(
-                    pw_to_use->wpn.dmg_type, can_shoot)) {
+                if(!g_gameCtrl.weapons().checkDmgTypeCanShootNonStrict(
+                    pw_to_use->criteria.dmg_type, can_shoot)) {
                     return false;
                 }
-                does_phys_dmg = (pw_to_use->wpn.dmg_type
+                does_phys_dmg = (pw_to_use->criteria.dmg_type
                     & MapObject::dmg_Physical) != 0;
                 break;
         }
@@ -171,14 +270,14 @@ bool PedInstance::createActQFiring(actionQueueGroupType &as, PathNode *tpn,
                     aq.multi_var.enemy_var.pw_to_use.wpn.dmg_type = wi->dmgType();
                 }
             } else {*/
-                aq.multi_var.enemy_var.pw_to_use.desc = 2;
-                aq.multi_var.enemy_var.pw_to_use.wpn.wi = wi;
+            aq.multi_var.enemy_var.pw_to_use.desc = WeaponHolder::WeaponSelectCriteria::kCritPointer;
+                aq.multi_var.enemy_var.pw_to_use.criteria.wi = wi;
             //}
         } else {
             can_shoot = true;
             does_phys_dmg = true;
-            aq.multi_var.enemy_var.pw_to_use.desc = 5;
-            aq.multi_var.enemy_var.pw_to_use.wpn.dmg_type = MapObject::dmg_Physical;
+            aq.multi_var.enemy_var.pw_to_use.desc = WeaponHolder::WeaponSelectCriteria::kCritDamageNonStrict;
+            aq.multi_var.enemy_var.pw_to_use.criteria.dmg_type = MapObject::dmg_Physical;
         }
     }
 
@@ -340,22 +439,6 @@ void PedInstance::createActQUsingCar(actionQueueGroupType &as, PathNode *tpn,
     as.actions.push_back(aq);
 }
 
-void PedInstance::createActQInCar(actionQueueGroupType &as, PathNode *tpn,
-    ShootableMapObject *tsmo)
-{
-    as.state = 1;
-    actionQueueType aq;
-    aq.state = 1;
-    aq.target.desc = 3;
-    aq.target.t_smo = tsmo;
-    aq.target.t_pn = *tpn;
-    aq.condition = 0;
-    aq.as = PedInstance::pa_smNone;
-    aq.group_desc = PedInstance::gd_mStandWalk;
-    aq.act_exec = PedInstance::ai_aUseObject;
-    as.actions.push_back(aq);
-}
-
 void PedInstance::createActQLeaveCar(actionQueueGroupType &as,
         ShootableMapObject *tsmo)
 {
@@ -398,7 +481,7 @@ bool PedInstance::createActQFindEnemy(actionQueueGroupType &as) {
     aq.act_exec = PedInstance::ai_aFindEnemy | PedInstance::ai_aWaitToStart;
     Mod *pMod = slots_[Mod::MOD_BRAIN];
 
-    pedWeaponToUse pw_to_use;
+    WeaponSelectCriteria pw_to_use;
     pw_to_use.use_ranks = false;
 
     int32 tm_wait = tm_before_check_;
@@ -418,18 +501,18 @@ bool PedInstance::createActQFindEnemy(actionQueueGroupType &as) {
         WeaponInstance *wi = selectedWeapon();
         if (wi && wi->usesAmmo() && wi->ammoRemaining() == 0) {
             wi = NULL;
-            setSelectedWeapon(-1);
+            deselectWeapon();
         }
         if (wi && wi->canShoot() && wi->doesPhysicalDmg()) {
-            pw_to_use.desc = 2;
-            pw_to_use.wpn.wi = wi;
+            pw_to_use.desc = WeaponHolder::WeaponSelectCriteria::kCritPointer;
+            pw_to_use.criteria.wi = wi;
         } else {
-            pw_to_use.desc = 5;
-            pw_to_use.wpn.dmg_type = MapObject::dmg_Physical;
+            pw_to_use.desc = WeaponHolder::WeaponSelectCriteria::kCritDamageNonStrict;
+            pw_to_use.criteria.dmg_type = MapObject::dmg_Physical;
         }
     } else {
-        pw_to_use.desc = 5;
-        pw_to_use.wpn.dmg_type = MapObject::dmg_Physical;
+        pw_to_use.desc = WeaponHolder::WeaponSelectCriteria::kCritDamageNonStrict;
+        pw_to_use.criteria.dmg_type = MapObject::dmg_Physical;
     }
     if (createActQFiring(as, NULL, NULL, false, 0, &pw_to_use))
         as.actions.back().state |= 64;
@@ -465,9 +548,9 @@ bool PedInstance::createActQFindNonFriend(actionQueueGroupType &as)
     aq.multi_var.time_var.elapsed = 0;
     aq.multi_var.time_var.time_to_start = tm_wait;
     as.actions.push_back(aq);
-    pedWeaponToUse pw_to_use;
-    pw_to_use.desc = 4;
-    pw_to_use.wpn.dmg_type = MapObject::dmg_Persuasion;
+    WeaponSelectCriteria pw_to_use;
+    pw_to_use.desc = WeaponHolder::WeaponSelectCriteria::kCritDamageStrict;
+    pw_to_use.criteria.dmg_type = MapObject::dmg_Persuasion;
     if (createActQFiring(as, NULL, NULL, false, 0, &pw_to_use))
         as.actions.back().state |= 64;
     else
@@ -511,7 +594,7 @@ void PedInstance::createActQTrigger(actionQueueGroupType &as, PathNode *tpn,
 }
 
 void PedInstance::createActQFindWeapon(actionQueueGroupType &as,
-    pedWeaponToUse *pw_to_use, int dist)
+    WeaponSelectCriteria *pw_to_use, int dist)
 {
     as.state = 1;
     actionQueueType aq;

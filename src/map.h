@@ -26,23 +26,12 @@
 #define MAP_H
 
 #include "common.h"
-#include "mapobject.h"
 
 #define NUM_MAPS               59
 
 class Tile;
 class TileManager;
-
-/*!
- * Map helper class.
- */
-class MapHelper {
-public:
-    virtual ~ MapHelper() {}
-    virtual void drawAt(int tilex, int tiley, int tilez, int x, int y) = 0;
-    virtual void createFastKeys(int tilex, int tiley,
-        int maxtilex, int maxtiley) = 0;
-};
+class MapObject;
 
 /*!
  * This a convenient structure to store a position
@@ -97,12 +86,13 @@ public:
     ~Map();
 
     bool loadMap(uint8 *mapData);
-    void draw(int scrollX, int scrollY, MapHelper *helper);
 
     uint16 id() { return i_id_; }
     int width() { return map_width_; }
     int height() { return map_height_; }
     void mapDimensions(int *x, int *y, int *z);
+    //! Clip x,y,z to map dimensions
+    void adjXYZ(int &x, int &y, int &z);
 
     int tileToScreenX(int x, int y, int z, int pX, int pY);
     int tileToScreenY(int x, int y, int z, int pX, int pY);
@@ -155,14 +145,8 @@ public:
     void setTarget(MapObject *pTarget);
     //! Return the curent target. May be null
     MapObject * target() { return p_target_; }
-    //! Return the target position
-    MapTilePoint targetPosition();
     //! Clear the target source
     void clearTarget();
-    //! Defines the evacuation point on the minimap
-    void setEvacuationPoint(const toDefineXYZ &evacPt);
-    //! Return the evacuation position
-    void evacuationPoint(toDefineXYZ &evacPt);
 
 private:
     /* An array with the same size of the real map but containing
@@ -174,8 +158,6 @@ private:
     int mmax_y_;
     /*! Current target emitting a signal.*/
     MapObject *p_target_;
-    /*! Coords on the world map of the signal source.*/
-    toDefineXYZ evacPt_;
 };
 
 #endif

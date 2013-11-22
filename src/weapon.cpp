@@ -30,49 +30,218 @@
 #include <assert.h>
 
 #include "app.h"
+#include "weapon.h"
+#include "ped.h"
 #include "vehicle.h"
+#include "mission.h"
+#include "utils/log.h"
 
 #define Z_SHIFT_TO_AIR   4
 
-Weapon::Weapon(const std::string& w_name, int smallIcon, int bigIcon, int w_cost,
-    int w_ammo, int w_range, int w_shot, int w_rank, int w_anim,
-    Weapon::WeaponAnimIndex w_idx, snd::InGameSample w_sample,
-    WeaponType w_type, MapObject::DamageType w_dmg_type,
-    int w_ammo_per_shot, int w_time_for_shot, int w_time_reload,
-    unsigned int w_shot_property, int w_hit_anim, int w_obj_hit_anim,
-    int w_trace_anim, int w_rd_anim, int w_range_dmg, double w_shot_angle,
-    double w_shot_accuracy, int w_shot_speed,
-    int w_dmg_per_shot, int w_shots_per_ammo, int w_weight)
+Weapon::Weapon(WeaponType w_type, ConfigFile &conf)
 {
-    name_ = w_name;
-    small_icon_ = smallIcon;
-    big_icon_ = bigIcon;
-    cost_ = w_cost;
-    ammo_cost_ = w_shot;
-    ammo_= w_ammo;
-    range_= w_range;
-    dmg_per_shot_ = w_dmg_per_shot;
-    anim_ = w_anim;
-    rank_ = w_rank;
-    idx_ = w_idx;
-    dmg_type_ = w_dmg_type;
-    sample_ = w_sample;
     type_ = w_type;
-    ammo_per_shot_ = w_ammo_per_shot;
-    time_for_shot_ = w_time_for_shot;
-    time_reload_ = w_time_reload;
     submittedToSearch_ = false;
-    shot_property_ = w_shot_property;
-    anims_.hit_anim = w_hit_anim;
-    anims_.obj_hit_anim = w_obj_hit_anim;
-    anims_.trace_anim = w_trace_anim;
-    anims_.rd_anim = w_rd_anim;
-    range_dmg_ = w_range_dmg;
-    shot_angle_ = w_shot_angle;
-    shot_accuracy_ = w_shot_accuracy;
-    shot_speed_ = w_shot_speed;
-    shots_per_ammo_ = w_shots_per_ammo;
-    weight_ = w_weight;
+
+    switch(w_type) {
+        case Weapon::Pistol:
+            idx_ = Weapon::Pistol_Anim;
+            sample_ = snd::PISTOL;
+            dmg_type_ = MapObject::dmg_Bullet;
+            shot_property_ = Weapon::wspt_Pistol;
+            anims_.hit_anim = SFXObject::sfxt_BulletHit;
+            anims_.obj_hit_anim = SFXObject::sfxt_BulletHit;
+            anims_.trace_anim = SFXObject::sfxt_Unknown;
+            anims_.rd_anim = SFXObject::sfxt_Unknown; 
+            break;
+        case Weapon::Minigun:
+            idx_ = Weapon::Minigun_Anim;
+            sample_ = snd::MINIGUN;
+            dmg_type_ = MapObject::dmg_Bullet;
+            shot_property_ = Weapon::wspt_Minigun;
+            anims_.hit_anim = SFXObject::sfxt_BulletHit;
+            anims_.obj_hit_anim = SFXObject::sfxt_BulletHit;
+            anims_.trace_anim = SFXObject::sfxt_Unknown;
+            anims_.rd_anim = SFXObject::sfxt_Unknown; 
+            break;
+        case Weapon::Flamer:
+            idx_ = Weapon::Flamer_Anim;
+            sample_ = snd::FLAME;
+            dmg_type_ = MapObject::dmg_Burn;
+            shot_property_ = Weapon::wspt_Flamer;
+            anims_.hit_anim = SFXObject::sfxt_FlamerFire;
+            anims_.obj_hit_anim = SFXObject::sfxt_FlamerFire;
+            anims_.trace_anim = SFXObject::sfxt_FlamerFire;
+            anims_.rd_anim = SFXObject::sfxt_Unknown; 
+            break;
+        case Weapon::LongRange:
+            idx_ = Weapon::LongRange_Anim;
+            sample_ = snd::LONGRANGE;
+            dmg_type_ = MapObject::dmg_Bullet;
+            shot_property_ = Weapon::wspt_LongRange;
+            anims_.hit_anim = SFXObject::sfxt_BulletHit;
+            anims_.obj_hit_anim = SFXObject::sfxt_BulletHit;
+            anims_.trace_anim = SFXObject::sfxt_Unknown;
+            anims_.rd_anim = SFXObject::sfxt_Unknown; 
+            break;
+        case Weapon::EnergyShield:
+            idx_ = Weapon::EnergyShield_Anim;
+            sample_ = snd::NO_SOUND;
+            dmg_type_ = MapObject::dmg_None;
+            shot_property_ = Weapon::wspt_EnergyShield;
+            anims_.hit_anim = SFXObject::sfxt_Unknown;
+            anims_.obj_hit_anim = SFXObject::sfxt_Unknown;
+            anims_.trace_anim = SFXObject::sfxt_Unknown;
+            anims_.rd_anim = SFXObject::sfxt_Unknown; 
+            break;
+        case Weapon::Uzi:
+            idx_ = Weapon::Uzi_Anim;
+            sample_ = snd::UZI;
+            dmg_type_ = MapObject::dmg_Bullet;
+            shot_property_ = Weapon::wspt_Uzi;
+            anims_.hit_anim = SFXObject::sfxt_BulletHit;
+            anims_.obj_hit_anim = SFXObject::sfxt_BulletHit;
+            anims_.trace_anim = SFXObject::sfxt_Unknown;
+            anims_.rd_anim = SFXObject::sfxt_Unknown; 
+            break;
+        case Weapon::Laser:
+            idx_ = Weapon::Laser_Anim;
+            sample_ = snd::LASER;
+            dmg_type_ = MapObject::dmg_Laser;
+            shot_property_ = Weapon::wspt_Laser;
+            anims_.hit_anim = SFXObject::sfxt_Fire_LongSmoke;
+            anims_.obj_hit_anim = SFXObject::sfxt_Unknown;
+            anims_.trace_anim = SFXObject::sfxt_Unknown;
+            anims_.rd_anim = SFXObject::sfxt_Unknown; 
+            break;
+        case Weapon::GaussGun:
+            idx_ = Weapon::Gauss_Anim;
+            sample_ = snd::GAUSSGUN;
+            dmg_type_ = MapObject::dmg_Explosion;
+            shot_property_ = Weapon::wspt_GaussGun;
+            anims_.hit_anim = SFXObject::sfxt_ExplosionFire;
+            anims_.obj_hit_anim = SFXObject::sfxt_ExplosionBall;
+            anims_.trace_anim = SFXObject::sfxt_Smoke;
+            anims_.rd_anim = SFXObject::sfxt_LargeFire; 
+            break;
+        case Weapon::Shotgun:
+            idx_ = Weapon::Shotgun_Anim;
+            sample_ = snd::SHOTGUN;
+            dmg_type_ = MapObject::dmg_Bullet;
+            shot_property_ = Weapon::wspt_Shotgun;
+            anims_.hit_anim = SFXObject::sfxt_BulletHit;
+            anims_.obj_hit_anim = SFXObject::sfxt_BulletHit;
+            anims_.trace_anim = SFXObject::sfxt_Unknown;
+            anims_.rd_anim = SFXObject::sfxt_Unknown; 
+            break;
+        case Weapon::MediKit:
+            idx_ = Weapon::Unarmed_Anim;
+            sample_ = snd::NO_SOUND;
+            dmg_type_ = MapObject::dmg_Heal;
+            shot_property_ = Weapon::wspt_MediKit;
+            anims_.hit_anim = SFXObject::sfxt_Unknown;
+            anims_.obj_hit_anim = SFXObject::sfxt_Unknown;
+            anims_.trace_anim = SFXObject::sfxt_Unknown;
+            anims_.rd_anim = SFXObject::sfxt_Unknown; 
+            break;
+        case Weapon::Scanner:
+            idx_ = Weapon::Unarmed_Anim;
+            sample_ = snd::NO_SOUND;
+            dmg_type_ = MapObject::dmg_None;
+            shot_property_ = Weapon::wspt_Scanner;
+            anims_.hit_anim = SFXObject::sfxt_Unknown;
+            anims_.obj_hit_anim = SFXObject::sfxt_Unknown;
+            anims_.trace_anim = SFXObject::sfxt_Unknown;
+            anims_.rd_anim = SFXObject::sfxt_Unknown; 
+            break;
+        case Weapon::AccessCard:
+            idx_ = Weapon::Unarmed_Anim;
+            sample_ = snd::NO_SOUND;
+            dmg_type_ = MapObject::dmg_None;
+            shot_property_ = Weapon::wspt_AccessCard;
+            anims_.hit_anim = SFXObject::sfxt_Unknown;
+            anims_.obj_hit_anim = SFXObject::sfxt_Unknown;
+            anims_.trace_anim = SFXObject::sfxt_Unknown;
+            anims_.rd_anim = SFXObject::sfxt_Unknown; 
+            break;
+        case Weapon::TimeBomb:
+            idx_ = Weapon::Unarmed_Anim;
+            sample_ = snd::EXPLOSION;
+            dmg_type_ = MapObject::dmg_Explosion;
+            shot_property_ = Weapon::wspt_TimeBomb;
+            anims_.hit_anim = SFXObject::sfxt_ExplosionFire;
+            anims_.obj_hit_anim = SFXObject::sfxt_ExplosionBall;
+            anims_.trace_anim = SFXObject::sfxt_Unknown;
+            anims_.rd_anim = SFXObject::sfxt_ExplosionFire; 
+            break;
+        case Weapon::Persuadatron:
+            idx_ = Weapon::Unarmed_Anim;
+            sample_ = snd::PERSUADE;
+            dmg_type_ = MapObject::dmg_Persuasion;
+            shot_property_ = Weapon::wspt_Persuadatron;
+            anims_.hit_anim = SFXObject::sfxt_Unknown;
+            anims_.obj_hit_anim = SFXObject::sfxt_Unknown;
+            anims_.trace_anim = SFXObject::sfxt_Unknown;
+            anims_.rd_anim = SFXObject::sfxt_Unknown; 
+            break;
+        default:
+#if _DEBUG
+            printf("unknown weapon loaded(%i), NULL passed", w_type);
+#endif
+            break;
+    }
+
+    // initialize other properties
+    initFromConfig(w_type, conf);
+}
+
+void Weapon::initFromConfig(WeaponType w_type, ConfigFile &conf) {
+    const char *pattern = "weapon.%d.%s";
+    char propName[25];
+
+    try {
+        sprintf(propName, pattern, w_type, "name");
+        name_ = g_Ctx.getMessage(conf.read<std::string>(propName));
+
+        sprintf(propName, pattern, w_type, "icon.small");
+        small_icon_ = conf.read<int>(propName);
+        sprintf(propName, pattern, w_type, "icon.big");
+        big_icon_ = conf.read<int>(propName);
+        sprintf(propName, pattern, w_type, "cost");
+        cost_ = conf.read<int>(propName);
+        sprintf(propName, pattern, w_type, "ammo.nb");
+        ammo_ = conf.read<int>(propName);
+        sprintf(propName, pattern, w_type, "ammo.price");
+        ammo_cost_ = conf.read<int>(propName);
+        sprintf(propName, pattern, w_type, "range");
+        range_ = conf.read<int>(propName);
+        sprintf(propName, pattern, w_type, "rank");
+        rank_ = conf.read<int>(propName);
+        sprintf(propName, pattern, w_type, "anim");
+        anim_ = conf.read<int>(propName);
+        sprintf(propName, pattern, w_type, "ammopershot");
+        ammo_per_shot_ = conf.read<int>(propName);
+        sprintf(propName, pattern, w_type, "timeforshot");
+        time_for_shot_ = conf.read<int>(propName);
+        sprintf(propName, pattern, w_type, "timereload");
+        time_reload_ = conf.read<int>(propName);
+        sprintf(propName, pattern, w_type, "damagerange");
+        range_dmg_ = conf.read<int>(propName);
+        sprintf(propName, pattern, w_type, "shotangle");
+        shot_angle_ = conf.read<double>(propName);
+        sprintf(propName, pattern, w_type, "shotaccuracy");
+        shot_accuracy_ = conf.read<double>(propName);
+        sprintf(propName, pattern, w_type, "shotspeed");
+        shot_speed_ = conf.read<int>(propName);
+        sprintf(propName, pattern, w_type, "dmg_per_shot");
+        dmg_per_shot_ = conf.read<int>(propName);
+        sprintf(propName, pattern, w_type, "shots_per_ammo");
+        shots_per_ammo_ = conf.read<int>(propName);
+        sprintf(propName, pattern, w_type, "weight");
+        weight_ = conf.read<int>(propName);
+    } catch (...) {
+        FSERR(Log::k_FLG_GAME, "Weapon", "initFromConfig", ("Cannot load weapon %d : %s\n", w_type, propName))
+    }
 }
 
 WeaponInstance *Weapon::createInstance() {
@@ -122,6 +291,7 @@ bool WeaponInstance::animate(int elapsed) {
                 ammo_remaining_ = 0;
                 ((PedInstance *)owner_)->selectNextWeapon();
                 weapon_used_time_ = 0;
+                deactivate();
             }
             return true;
         } else if (main_type_ == Weapon::TimeBomb) {
@@ -781,7 +951,7 @@ uint16 WeaponInstance::inflictDamage(ShootableMapObject * tobj, PathNode * tp,
                     }
                 }*/
                 if (tobj && tobj->majorType() == MapObject::mjt_Ped) {
-                    if (((PedInstance *)owner_)->checkFriendIs(
+                    if (((PedInstance *)owner_)->isFriendWith(
                         (PedInstance *)tobj))
                     {
                         tobj = NULL;
@@ -1179,9 +1349,9 @@ void WeaponInstance::getHostileInRange(toDefineXYZ * cp,
     Mission * m = g_Session.getMission();
 
     if (mask & MapObject::mjt_Ped) {
-        for (int i = 0; i < m->numPeds(); i++) {
+        for (size_t i = 0; i < m->numPeds(); i++) {
             ShootableMapObject *p = m->ped(i);
-            if (!p->isIgnored() && (((PedInstance *)owner_)->checkHostileIs(p)
+            if (!p->isIgnored() && (((PedInstance *)owner_)->isHostileTo(p)
                 || ((PedInstance *)owner_)->isInHostilesFound(p))
                 && m->inRangeCPos(cp, &p, NULL, false, checkTileOnly, maxr,
                 &d) == 1)
@@ -1203,9 +1373,9 @@ void WeaponInstance::getHostileInRange(toDefineXYZ * cp,
         }
     }
     if (mask & MapObject::mjt_Vehicle) {
-        for (int i = 0; i < m->numVehicles(); i++) {
+        for (size_t i = 0; i < m->numVehicles(); i++) {
             ShootableMapObject *v = m->vehicle(i);
-            if (!v->isIgnored() && (((PedInstance *)owner_)->checkHostileIs(v)
+            if (!v->isIgnored() && (((PedInstance *)owner_)->isHostileTo(v)
                 || ((PedInstance *)owner_)->isInHostilesFound(v))
                 && m->inRangeCPos(cp, &v, NULL, false, checkTileOnly, maxr,
                 &d) == 1)
@@ -1252,13 +1422,13 @@ void WeaponInstance::getNonFriendInRange(toDefineXYZ * cp,
     if (maxr == -1)
         maxr = range();
 
-    for (int i = 0; i < m->numPeds(); i++) {
+    for (size_t i = 0; i < m->numPeds(); i++) {
         ShootableMapObject *p = m->ped(i);
         if (!p->isIgnored()
             // TODO: inrange if checktileonly = false might return "7"
             // different handling for this we might shoot if blocker
             // is not friendly
-            && !(((PedInstance *)owner_)->checkFriendIs((PedInstance *)p))
+            && !(((PedInstance *)owner_)->isFriendWith((PedInstance *)p))
             && m->inRangeCPos(cp, &p, NULL, false, checkTileOnly, maxr,
             &d) == 1)
         {
@@ -1371,14 +1541,14 @@ void ShotClass::rangeDamageAnim(toDefineXYZ &cp, double dmg_rng,
 }
 
 void ShotClass::createExplosion(ShootableMapObject* tobj, double dmg_rng,
-    int dmg_value)
+    int dmg_value, bool is_suicide)
 {
     Mission *m = g_Session.getMission();
     std::vector<ShootableMapObject *> all_targets;
     ShootableMapObject::DamageInflictType dit;
     dit.d_owner = tobj;
     dit.dvalue = dmg_value;
-    dit.dtype = MapObject::dmg_Explosion;
+    dit.dtype = is_suicide ? MapObject::dmg_Explosion_Suicide : MapObject::dmg_Explosion;
     dit.ddir = -1;
     toDefineXYZ xyz;
     tobj->convertPosToXYZ(&xyz);
@@ -1401,4 +1571,19 @@ void ShotClass::createExplosion(ShootableMapObject* tobj, double dmg_rng,
         m->addSfxObject(so);
     }
     rangeDamageAnim(xyz, dmg_rng, SFXObject::sfxt_ExplosionFire);
+}
+
+/*!
+ * This method creates a damage of type Bullet but with enough damage value
+ * to kill the agent and inflicts it to the agent. Used when agent commit suicide.
+ * \param p_ped The agent that will suicide.
+ */
+void ShotClass::make_self_shot(PedInstance *p_ped) {
+    ShootableMapObject::DamageInflictType dit;
+    dit.dtype = MapObject::dmg_Bullet;
+    dit.d_owner = p_ped;
+    dit.dvalue = PedInstance::kAgentMaxHealth;
+    dit.ddir = -1;
+
+    p_ped->handleDamage(&dit);
 }

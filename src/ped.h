@@ -7,6 +7,7 @@
  *   Copyright (C) 2006  Trent Waddington <qg@biodome.org>              *
  *   Copyright (C) 2006  Tarjei Knapstad <tarjei.knapstad@gmail.com>    *
  *   Copyright (C) 2010  Bohdan Stelmakh <chamel@users.sourceforge.net> *
+ *   Copyright (C) 2013  Benoit Blancard <benblan@users.sourceforge.net>*
  *                                                                      *
  *    This program is free software;  you can redistribute it and / or  *
  *  modify it  under the  terms of the  GNU General  Public License as  *
@@ -42,6 +43,7 @@
 class PedInstance;
 class Mission;
 class VehicleInstance;
+class Vehicle;
 
 #define NUM_ANIMS 10
 
@@ -163,6 +165,8 @@ class PedInstance : public ShootableMovableMapObject, public WeaponHolder,
     public ModOwner
 {
 public:
+    //! starting health for agents
+    static const int kAgentMaxHealth;
     PedInstance(Ped *ped, int m);
     ~PedInstance();
     //! Initialize the ped instance as an agent
@@ -246,26 +250,64 @@ public:
     void switchActionStateFrom(uint32 as);
     void setActionStateToDrawnAnim(void);
     bool animate(int elapsed, Mission *mission);
+    //! Temporary version of animate()
+    bool animate2(int elapsed, Mission *mission);
     void drawSelectorAnim(int x, int y);
+    //! Update frame to render
+    bool updateAnimation(int elapsed);
+    //! Set state for ped (replace switchActionStateTo)
+    void goToState(uint32 as);
+    //! Quit state for ped (replace switchActionStateFrom)
+    void leaveState(uint32 as);
+
+    //*************************************
+    // Action management
+    //*************************************
+    //! Adds the given action to the list of actions
+    void addAction(fs_actions::Action *pAction, bool appendAction);
+    //! Removes all ped's actions
+    void destroyAllActions();
+    //! Execute the current action if any
+    bool executeAction(int elapsed, Mission *pMission);
+    //! Execute a shoot if any
+    bool executeShootAction();
+    
+    //! Adds action to walk to a given destination
+    void addActionWalk(const PathNode &tpn, fs_actions::CreatOrigin origin, bool appendAction);
+    //! Adds action to follow a ped
+    void addActionFollowPed(PedInstance *pPed);
+    //! Adds action to put down weapon on the ground
+    void addActionPutdown(uint8 weaponIndex, bool appendAction);
+    //! Adds action to pick up weapon from the ground
+    void addActionPickup(WeaponInstance *pWeapon, bool appendAction);
+    //! Adds action to enter a given vehicle
+    void addActionEnterVehicle(Vehicle *pVehicle, bool appendAction);
+    //! Adds action to drive vehicle to destination
+    void addActionDriveVehicle(fs_actions::CreatOrigin origin, 
+           VehicleInstance *pVehicle, PathNode &destination, bool appendAction);
+    void addActionShootAt(PathNode &pn);
+
+    //*************************************
+    // Movement management
+    //*************************************
+    //! Set the destination to reach at given speed (todo : replace setDestinationP())
+    bool setDestination(Mission *m, PathNode &node, int newSpeed = -1);
+
+    void setDestinationP(Mission *m, int x, int y, int z,
+        int ox = 128, int oy = 128);
+
+    bool movementP(Mission *m, int elapsed);
 
     //*************************************
     // Weapon management
     //*************************************
-    //! Returns the currently used weapon or null if no weapon is used
-    WeaponInstance *selectedWeapon() {
-        return selected_weapon_ >= 0
-                && selected_weapon_ < (int) weapons_.size()
-            ? weapons_[selected_weapon_] : NULL;
-    }
-
-    void setSelectedWeapon(int n);
-
-    void selectNextWeapon();
     void dropWeapon(int n);
     void dropWeapon(WeaponInstance *w);
     void dropAllWeapons();
     void destroyAllWeapons();
     bool wePickupWeapon();
+    //! Return true if ped can shoot
+    bool canAddShootAction();
 
     bool inSightRange(MapObject *t);
     VehicleInstance *inVehicle();
@@ -278,11 +320,6 @@ public:
     AnimationDrawn drawnAnim(void);
     void setDrawnAnim(AnimationDrawn drawn_anim);
     bool handleDrawnAnim(int elapsed);
-
-    void setDestinationP(Mission *m, int x, int y, int z,
-        int ox = 128, int oy = 128);
-
-    bool movementP(Mission *m, int elapsed);
 
     typedef struct {
         int32 dir_orig;
@@ -332,6 +369,10 @@ public:
 
     //! Forces agent to kill himself
     void commit_suicide();
+    //! Indicates the agent is commiting suicide
+    bool is_suiciding() { return is_suiciding_; }
+    void set_is_suiciding(bool flag) { is_suiciding_ = flag; }
+
     bool handleDamage(ShootableMapObject::DamageInflictType *d);
 
     void setDescStateMasks(unsigned int desc_state) {
@@ -520,10 +561,11 @@ public:
         it_e = hostiles_found_.end();
         return true;
     }
-
-    bool checkHostileIs(ShootableMapObject *obj,
+    //! Verify hostility between this Ped and the object
+    bool isHostileTo(ShootableMapObject *obj,
         unsigned int hostile_desc_alt = 0);
-    bool checkFriendIs(PedInstance *p);
+    //! Verify if this ped is friend with the given ped
+    bool isFriendWith(PedInstance *p);
 
     typedef enum {
         og_dmUndefined = 0x0,
@@ -550,29 +592,6 @@ public:
         pd_smAutoAction = 0x0020,
         pd_smAll = 0xFFFF
     } pedDescStateMasks;
-
-    typedef struct {
-        union {
-            // weapon index from weapons_ in mission_
-            uint32 indx;
-            // use only this weapon for attack
-            WeaponInstance *wi;
-            // use only this type of weapon
-            Weapon::WeaponType wpn_type;
-            // use weapon that inflicts this type of damage
-            // MapObject::DamageType
-            uint32 dmg_type;
-        } wpn;
-        // union descriptor
-        // 0 - not set, 1 - indx, 2 - pointer, 3 - weapon type,
-        // 4 - damage type strict (type == dmg_type),
-        // 5 - damage type non-strict (type & dmg_type != 0)
-        // NOTE: indx should be used only when loading game script;
-        // 4,5 - when that can shoot only
-        uint8 desc;
-        bool use_ranks;
-    } pedWeaponToUse;
-    bool selectRequiredWeapon(pedWeaponToUse *pw_to_use = NULL);
 
     typedef enum {
         ai_aNone = 0x0,
@@ -662,7 +681,7 @@ public:
                 uint32 make_shots;
                 uint32 shots_done;
                 bool forced_shot;
-                pedWeaponToUse pw_to_use;
+                WeaponSelectCriteria pw_to_use;
                 // upon reaching this value action is complete;
                 // health dropped to this value( or persuade resistance points?)
                 int32 value;
@@ -741,6 +760,20 @@ public:
         uint32 * id = NULL);
     bool addActQToQueue(actionQueueGroupType &as,
         uint32 * id = NULL);
+    /*!
+     * Add the action to the list of actions.
+     * \param as The action to add
+     * \param append True means the action is added after existing actions. False
+     *   means the action is the only one executed.
+     * \param id
+     */
+    void addAction(actionQueueGroupType &as, bool append = false, uint32 * id = NULL) {
+        if (append) {
+            addActQToQueue(as, id);
+        } else {
+            setActQInQueue(as, id);
+        }
+    }
     void clearActQ() { actions_queue_.clear(); }
 
     void createDefQueue();
@@ -757,7 +790,7 @@ public:
         int32 dir = -1);
     bool createActQFiring(actionQueueGroupType &as, PathNode *tpn,
         ShootableMapObject *tsmo = NULL, bool forced_shot = false,
-        uint32 make_shots = 0, pedWeaponToUse *pw_to_use = NULL,
+        uint32 make_shots = 0, WeaponSelectCriteria *pw_to_use = NULL,
         int32 value = -1);
     void createActQFollowing(actionQueueGroupType &as,
         ShootableMapObject *tsmo, uint32 condition, int32 dist = 128, int32 rd = 0);
@@ -773,8 +806,6 @@ public:
         ShootableMapObject *tsmo, int32 dir = -1);
     void createActQUsingCar(actionQueueGroupType &as, PathNode *tpn,
         ShootableMapObject *tsmo);
-    void createActQInCar(actionQueueGroupType &as, PathNode *tpn,
-        ShootableMapObject *tsmo);
     void createActQLeaveCar(actionQueueGroupType &as,
         ShootableMapObject *tsmo);
     void createActQWait(actionQueueGroupType& as, int tm_wait,
@@ -788,7 +819,7 @@ public:
     void createActQTrigger(actionQueueGroupType &as, PathNode *tpn, int32 range);
 
     void createActQFindWeapon(actionQueueGroupType &as,
-        pedWeaponToUse *pw_to_use = NULL, int dist = -1);
+        WeaponSelectCriteria *pw_to_use = NULL, int dist = -1);
 
     void createActQCheckOwner(actionQueueGroupType &as);
     
@@ -801,11 +832,8 @@ public:
     bool checkActGCompleted(fs_actions::CreatOrigin origin);
     void pauseAllInActG(actionQueueGroupType &as, uint32 start_pos = 1);
 
-    /*! 
-     * Movement speed calculated from base speed, mods, weight of inventory,
-     * ipa, etc.
-     */
-    int getSpeed();
+    //! Returns ped's speed under normal conditions
+    int getDefaultSpeed();
     int getSpeedOwnerBoost();
 
     void getAccuracy(double &base_acc);
@@ -815,20 +843,35 @@ public:
     void cpyEnemyDefs(Mmuu32_t &eg_defs) { eg_defs = enemy_group_defs_; }
     bool isArmed() { return (desc_state_ & pd_smArmed) != 0; }
     bool isExcluded() { return (state_ & pa_smCheckExcluded) != 0; }
-    void updtPreferedWeapon();
     targetDescType * lastFiringTarget() { return &last_firing_target_; }
     
     IPAStim *adrenaline_;
     IPAStim *perception_;
     IPAStim *intelligence_;
-    
+protected:
+    /*!
+     * Called when a weapon has been deselected.
+     * \param wi The deselected weapon
+     */
+    void handleWeaponDeselected(WeaponInstance * wi);
+    /*!
+     * Called when a weapon has been selected.
+     * \param wi The selected weapon
+     */
+    void handleWeaponSelected(WeaponInstance * wi);
 protected:
     Ped *ped_;
-
+    //! If this flag is true, all actions should be dropped
+    bool drop_actions_;
     std::vector <actionQueueGroupType> actions_queue_;
-    // 0, ok; 1 - all actions should be dropped
-    uint8 actions_property_;
     std::vector <actionQueueGroupType> default_actions_;
+
+    /*! Ped's behaviour.*/
+    fs_actions::Behaviour *pBehaviour_;
+    /*! Current action*/
+    fs_actions::Action *currentAction_;
+
+
     uint32 action_grp_id_;
     // (pedDescStateMasks)
     uint32 desc_state_;
@@ -864,8 +907,6 @@ protected:
     AnimationDrawn drawn_anim_;
 
     int sight_range_;
-    int selected_weapon_;
-    pedWeaponToUse prefered_weapon_;
     VehicleInstance *in_vehicle_;
     //! This flag tells if this is our agent, assuming it's an agent.
     bool is_our_;
@@ -875,6 +916,10 @@ protected:
     //! points needed to persuade ped
     int persuasion_points_;
     std::set <PedInstance *> persuaded_group_;
+    //! Flag to mark suiciding agent
+    bool is_suiciding_;
+    //! Convenient field to store current number of shoot actions in queue
+    uint8 nbShootInQueue_;
 
     bool walkable(int x, int y, int z) { return true; }
 

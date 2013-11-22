@@ -28,6 +28,7 @@
 #define GAMEPLAYMENU_H
 
 #include "agentselectorrenderer.h"
+#include "maprenderer.h"
 #include "minimaprenderer.h"
 #include "squadselection.h"
 #include "core/gameevent.h"
@@ -75,13 +76,14 @@ protected:
     void selectAgent(size_t agentNo, bool addToGroup);
     //! Selects/deselects all agents
     void selectAllAgents();
+    //! Reacts to a weapon selection/deselection
+    void handleWeaponSelection(uint8 weapon_idx, bool ctrl);
 
     //! Deselect agent if he died
     void updateSelectionForDeadAgent(PedInstance *p_ped);
     //! updates visual markers for our agents
     void updtAgentsMarker();
 
-    bool setDestinationPoint(const MapTilePoint &mapPt, bool isForGroup, bool addDestPt, size_t agentNo, PedInstance *p_ped);
     void stopShootingEvent(void);
     //! Centers the minimap on the selection leader
     void centerMinimapOnLeader();
@@ -117,6 +119,8 @@ protected:
     SquadSelection selection_;
     /*! Object mouse cursor is above*/ 
     ShootableMapObject *target_;
+    /*! This renderer is in charge of drawing the map.*/
+    MapRenderer map_renderer_;
     /*! This renderer is in charge of drawing the minimap.*/
     GamePlayMinimapRenderer mm_renderer_;
     /*! This renderer is in charge of drawing the IPA meters.*/
