@@ -240,6 +240,7 @@ void File::getGameSavedNames(std::vector<std::string> &files) {
             processSaveFile(File.cFileName, files);
         } while (FindNextFile(hSearch, &File));
     }
+    FindClose(hSearch);
 #else
     DIR * rep = opendir(savePath.c_str());
     struct dirent * ent;
