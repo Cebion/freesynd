@@ -209,7 +209,7 @@ int main(int argc, char *argv[]) {
 #endif
 
     if (iniPath.size() == 0) {
-        iniPath.assign(File::defaultIniFolder());
+        iniPath.assign(File::getDefaultIniFolder());
         iniPath.append("/freesynd.ini");
 #ifdef _WIN32
         if (_access(iniPath.c_str(), 0) != 0)

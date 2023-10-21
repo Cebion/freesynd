@@ -65,10 +65,12 @@ public:
 
     int32 getTimeForClick() { return time_for_click_; }
 
-    void setLanguage(FS_Lang lang);
     FS_Lang currLanguage(void) {return curr_language_; }
     std::string getMessage(const std::string & id);
     void getMessage(const std::string & id, std::string & msg);
+
+private:
+    void readLanguage(const ConfigFile& conf);
 
 private:
     /*! True means the game will run in fullscreen. */

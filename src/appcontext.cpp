@@ -41,15 +41,8 @@ AppContext::~AppContext() {
     }
 }
 
-// TODO move to File class
-static void addMissingSlash(string& str) {
-    if (str[str.length() - 1] != '/') str.push_back('/');
-}
-
 bool AppContext::readConfiguration(const std::string& iniPath) {
     try {
-        File::setHomePath(File::defaultIniFolder());
-
         iniPath_ = iniPath;
         ConfigFile conf(iniPath);
 
@@ -59,31 +52,16 @@ bool AppContext::readConfiguration(const std::string& iniPath) {
 
         test_files_ = conf.read("test_data", true);
 
-        string freesyndDataDir = conf.read("freesynd_data_dir", File::getFreesyndDataFullPath());
-        addMissingSlash(freesyndDataDir);
-        File::setOurDataPath(freesyndDataDir);
+        std::string freesynDataDir = conf.read("freesynd_data_dir", File::getDefaultFreesyndDataFolder());
+        File::setFreesyndDataFolder(freesynDataDir);
 
-        string origDataDir = conf.read("data_dir", freesyndDataDir);
-        addMissingSlash(origDataDir);
-        File::setDataPath(origDataDir);
+        std::string originalDataDir = conf.read("data_dir", freesynDataDir);
+        File::setOriginalDataFolder(originalDataDir);
 
-        switch (conf.read("language", 0)) {
-            case 0:
-                setLanguage(AppContext::ENGLISH);
-                break;
-            case 1:
-                setLanguage(AppContext::FRENCH);
-                break;
-            case 2:
-                setLanguage(AppContext::ITALIAN);
-                break;
-            case 3:
-                setLanguage(AppContext::GERMAN);
-                break;
-            default:
-                setLanguage(AppContext::ENGLISH);
-                break;
-        }
+        std::string saveDataDir = conf.read("save_data_dir", File::getDefaultIniFolder());
+        File::setSaveDataFolder(saveDataDir);
+
+        readLanguage(conf);
 
         return true;
     } catch (...) {
@@ -92,30 +70,31 @@ bool AppContext::readConfiguration(const std::string& iniPath) {
     }
 }
 
-void AppContext::setLanguage(FS_Lang lang) {
-    std::string filename(File::dataFullPath("lang/"));
-    switch (lang) {
-        case ENGLISH:
-            filename.append("english.lng");
+void AppContext::readLanguage(const ConfigFile& conf) {
+    std::string filename;
+
+    switch (conf.read("language", 0)) {
+        case 1:
+            curr_language_ = AppContext::FRENCH;
+            filename = "lang/french.lng";
             break;
-        case FRENCH:
-            filename.append("french.lng");
+        case 2:
+            curr_language_ = AppContext::ITALIAN;
+            filename = "lang/italian.lng";
             break;
-        case ITALIAN:
-            filename.append("italian.lng");
+        case 3:
+            curr_language_ = AppContext::GERMAN;
+            filename = "lang/german.lng";
             break;
-        case GERMAN:
-            filename.append("german.lng");
-            break;
+        case 0: // 0 is english
         default:
-            filename.append("english.lng");
-            lang = ENGLISH;
+            curr_language_ = AppContext::ENGLISH;
+            filename = "lang/english.lng";
             break;
     }
 
     try {
-        language_ = new ConfigFile(filename);
-        curr_language_ = lang;
+        language_ = new ConfigFile(File::getFreesyndDataFullPath(filename));
     } catch (...) {
         FSERR(Log::k_FLG_IO, "AppContext", "setLanguage", ("Unable to load language file %s!\n", filename.c_str()));
         language_ = NULL;

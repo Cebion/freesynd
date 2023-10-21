@@ -92,7 +92,7 @@ bool App::initialize(const std::string& iniPath) {
     }
 
     if (context_->isTestFiles()) {
-        if (!File::testOriginalData(iniPath)) {
+        if (!File::testOriginalData()) {
             return false;
         }
         // do not tests files from now

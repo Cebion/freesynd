@@ -240,22 +240,22 @@ bool SystemSDL::pumpEvents(FS_Event *pEvtOut) {
             // Check if key pressed is a modifier
             switch(evtIn.key.keysym.sym) {
                 case SDLK_RSHIFT:
-                    keyModState_ = keyModState_ | KMD_RSHIFT; 
+                    keyModState_ = keyModState_ | KMD_RSHIFT;
                     break;
                 case SDLK_LSHIFT:
-                    keyModState_ = keyModState_ | KMD_LSHIFT; 
+                    keyModState_ = keyModState_ | KMD_LSHIFT;
                     break;
                 case SDLK_RCTRL:
-                    keyModState_ = keyModState_ | KMD_RCTRL; 
+                    keyModState_ = keyModState_ | KMD_RCTRL;
                     break;
                 case SDLK_LCTRL:
-                    keyModState_ = keyModState_ | KMD_LCTRL; 
+                    keyModState_ = keyModState_ | KMD_LCTRL;
                     break;
                 case SDLK_RALT:
-                    keyModState_ = keyModState_ | KMD_RALT; 
+                    keyModState_ = keyModState_ | KMD_RALT;
                     break;
                 case SDLK_LALT:
-                    keyModState_ = keyModState_ | KMD_LALT; 
+                    keyModState_ = keyModState_ | KMD_LALT;
                     break;
                 default:
                     // We pass the event only if it's not a allowed modifier key
@@ -403,13 +403,13 @@ void SystemSDL::setColor(uint8 index, uint8 r, uint8 g, uint8 b) {
  * This method uses the SDL_Image library to load a file called
  * cursors/cursors.png under the root path.
  * The file is loaded into the cursor surface.
- * \return False if the loading has failed. If it's the case, 
+ * \return False if the loading has failed. If it's the case,
  * cursor_surf_ will be NULL.
  */
 bool SystemSDL::loadCursorSprites() {
     cursor_rect_.w = cursor_rect_.h = CURSOR_WIDTH;
 
-    cursor_surf_ = IMG_Load(File::dataFullPath("cursors/cursors.png").c_str());
+    cursor_surf_ = IMG_Load(File::getFreesyndDataFullPath("cursors/cursors.png").c_str());
 
     if (!cursor_surf_) {
         printf("Cannot load cursors image: %s\n", IMG_GetError());
@@ -419,8 +419,8 @@ bool SystemSDL::loadCursorSprites() {
     return true;
 }
 
-/*! 
- * Returns the mouse pointer coordinates using SDL_GetMouseState. 
+/*!
+ * Returns the mouse pointer coordinates using SDL_GetMouseState.
  * \param x The x coordinate.
  * \param y The y coordinate.
  * \return See SDL_GetMouseState.

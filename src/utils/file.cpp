@@ -96,7 +96,7 @@ static bool getResourcePath(string& resourcePath) {
 }
 #endif
 
-std::string File::defaultIniFolder()
+std::string File::getDefaultIniFolder()
 {
     std::string folder;
 #ifdef _WIN32
@@ -126,17 +126,17 @@ std::string File::defaultIniFolder()
     return folder;
 }
 
-std::string File::getFreesyndDataFullPath() {
+std::string File::getDefaultFreesyndDataFolder() {
     std::string fsDataFullPath;
 #ifdef _WIN32
-    fsDataFullPath = defaultIniFolder() + "\\data";
+    fsDataFullPath = getDefaultIniFolder() + "\\data";
 #elif defined(__APPLE__)
     if (getResourcePath(fsDataFullPath)) {
         // this is an app bundle, so let's default the data dir
         // to the one included in the app bundle's resources.
         fsDataFullPath += "data/";
     } else {
-        FSERR(Log::k_FLG_GFX, "File", "getFreesyndDataFullPath", ("Unable to locate app bundle resources.\n"));
+        FSERR(Log::k_FLG_GFX, "File", "getDefaultFreesyndDataFolder", ("Unable to locate app bundle resources.\n"));
         return false;
     }
 #else
@@ -151,7 +151,7 @@ std::string File::getFreesyndDataFullPath() {
  * \param filename The relative path to one of the original data files.
  * \param uppercase If true, the resulting string will uppercased.
  */
-std::string File::originalDataFullPath(const std::string& filename, bool uppercase) {
+std::string File::getOriginalDataFullPath(const std::string& filename, bool uppercase) {
     std::string second_part = filename;
 
     std::string::iterator it;
@@ -167,7 +167,7 @@ std::string File::originalDataFullPath(const std::string& filename, bool upperca
  * No control is made on the result format or file existence.
  * \param filename The relative path to one of our data files.
  */
-std::string File::dataFullPath(const std::string& filename) {
+std::string File::getFreesyndDataFullPath(const std::string& filename) {
     return ourDataPath_ + filename;
 }
 
@@ -194,8 +194,8 @@ void File::getFullPathForSaveSlot(int slot, std::string &path) {
  */
 uint8 *File::loadOriginalFileToMem(const std::string& filename, int &filesize) {
     // try lowercase, then uppercase.
-    FILE *fp = fopen(originalDataFullPath(filename, false).c_str(), "rb");
-    if (!fp) fp = fopen(originalDataFullPath(filename, true).c_str(), "rb");
+    FILE *fp = fopen(getOriginalDataFullPath(filename, false).c_str(), "rb");
+    if (!fp) fp = fopen(getOriginalDataFullPath(filename, true).c_str(), "rb");
 
     if (fp) {
         fseek(fp, 0, SEEK_END);
@@ -222,24 +222,34 @@ uint8 *File::loadOriginalFileToMem(const std::string& filename, int &filesize) {
 
 FILE *File::openOriginalFile(const std::string& filename) {
     // try lowercase, then uppercase.
-    FILE *fp = fopen(originalDataFullPath(filename, false).c_str(), "r");
-    if (!fp) fp = fopen(originalDataFullPath(filename, true).c_str(), "r");
+    FILE *fp = fopen(getOriginalDataFullPath(filename, false).c_str(), "r");
+    if (!fp) fp = fopen(getOriginalDataFullPath(filename, true).c_str(), "r");
     return fp;
 }
 
-void File::setDataPath(const std::string& path) {
-    dataPath_ = path;
-    LOG(Log::k_FLG_IO, "File", "setDataPath", ("set data path to %s", path.c_str()));
+/*!
+ * Adds a trailing slash if needed to the given string
+ */
+void File::addMissingSlash(std::string& str) {
+    if (str[str.length() - 1] != '/') str.push_back('/');
 }
 
-void File::setOurDataPath(const std::string& path) {
+void File::setOriginalDataFolder(const std::string& path) {
+    dataPath_ = path;
+    addMissingSlash(dataPath_);
+    LOG(Log::k_FLG_IO, "File", "setOriginalDataPath", ("set data path to %s", path.c_str()));
+}
+
+void File::setFreesyndDataFolder(const std::string& path) {
     ourDataPath_ = path;
+    addMissingSlash(ourDataPath_);
     LOG(Log::k_FLG_IO, "File", "setOurDataPath", ("set our data path to %s", path.c_str()));
 }
 
-void File::setHomePath(const std::string& path) {
+void File::setSaveDataFolder(const std::string& path) {
     homePath_ = path;
-    LOG(Log::k_FLG_IO, "File", "setHomePath", ("set home path to %s", path.c_str()));
+    addMissingSlash(homePath_);
+    LOG(Log::k_FLG_IO, "File", "setSaveDataFolder", ("set save path to %s", path.c_str()));
 }
 
 uint8 *File::loadOriginalFile(const std::string& filename, int &filesize) {
@@ -357,11 +367,11 @@ void File::getGameSavedNames(std::vector<std::string> &files) {
 #endif
 }
 
-bool File::testOriginalData(const std::string& iniPath) {
+bool File::testOriginalData() {
 
     LOG(Log::k_FLG_IO, "File", "testOriginalData", ("Testing original Syndicate data..."));
 
-    std::string crcflname = File::dataFullPath("ref/original_data.crc");
+    std::string crcflname = File::getFreesyndDataFullPath("ref/original_data.crc");
     std::ifstream od(crcflname.c_str());
     if (od.fail()) {
         FSERR(Log::k_FLG_IO, "File", "testOriginalData",

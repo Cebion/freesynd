@@ -137,7 +137,7 @@ bool SdlMixerMusic::loadMusic(uint8 * musicData, int size)
  */
 bool SdlMixerMusic::loadMusicFile(const char *fname)
 {
-    Mix_Music *newmusic = Mix_LoadMUS(File::dataFullPath(fname).c_str());
+    Mix_Music *newmusic = Mix_LoadMUS(File::getFreesyndDataFullPath(fname).c_str());
 
     if (!newmusic) {
         Audio::error("SdlMixerMusic", "loadMusicFile", "Failed loading music from file");
