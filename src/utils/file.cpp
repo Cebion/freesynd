@@ -142,7 +142,32 @@ std::string File::getDefaultFreesyndDataFolder() {
 #else
     fsDataFullPath = PREFIX"/data";
 #endif
+    return fsDataFullPath;
+}
 
+/*!
+ * Set iniFullPath with the absolute path to the freesynd.ini file.
+ * \param iniFolder If empty that means we use getDefaultIniFolder. Else use the value.
+ * \param iniFullPath Result of the full path
+ * \return True means file exists. False means file will be created
+ */
+bool File::getIniFullPath(const std::string& iniFolder, std::string& iniFullPath) {
+    if (iniFolder.size() == 0) {
+        iniFullPath.assign(getDefaultIniFolder());
+    } else {
+        iniFullPath.assign(iniFolder);
+    }
+
+    addMissingSlash(iniFullPath);
+    iniFullPath.append("freesynd.ini");
+
+    // Test if file exists
+#ifdef _WIN32
+    return (_access(iniFullPath.c_str(), 0) == 0);
+#else
+    struct stat buf;
+    return (stat (iniFullPath.c_str(), &buf) == 0);
+#endif
 }
 
 /*!

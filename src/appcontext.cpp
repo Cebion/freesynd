@@ -41,36 +41,71 @@ AppContext::~AppContext() {
     }
 }
 
-bool AppContext::readConfiguration(const std::string& iniPath) {
-    try {
-        iniPath_ = iniPath;
-        ConfigFile conf(iniPath);
+bool AppContext::readConfiguration(const std::string& iniFolder) {
+    ConfigFile conf;
+    bool iniExist = File::getIniFullPath(iniFolder, iniPath_);
 
-        fullscreen_ = conf.read("fullscreen", false);
-        playIntro_ = conf.read("play_intro", true);
-        time_for_click_ = conf.read("time_for_click", 80);
-
-        test_files_ = conf.read("test_data", true);
-
-        std::string freesynDataDir = conf.read("freesynd_data_dir", File::getDefaultFreesyndDataFolder());
-        File::setFreesyndDataFolder(freesynDataDir);
-
-        std::string originalDataDir = conf.read("data_dir", freesynDataDir);
-        File::setOriginalDataFolder(originalDataDir);
-
-        std::string saveDataDir = conf.read("save_data_dir", File::getDefaultIniFolder());
-        File::setSaveDataFolder(saveDataDir);
-
-        readLanguage(conf);
-
-        return true;
-    } catch (...) {
-        FSERR(Log::k_FLG_IO, "AppContext", "readConfiguration", ("Unable to load configuration file %s!\n", iniPath.c_str()));
+    if (iniPath_.size() == 0) {
+        // There was a problem when finding ini path
         return false;
     }
+
+    FSINFO(Log::k_FLG_IO, "AppContext", "readConfiguration", ("Reading configuration file %s\n", iniPath_.c_str()));
+    if (iniExist) {
+        // Load file
+        std::ifstream in( iniPath_.c_str() );
+
+        if( !in ) {
+            return false;
+        }
+
+        in >> conf;
+    }
+
+    fullscreen_ = conf.read("fullscreen", false);
+    playIntro_ = conf.read("play_intro", true);
+    time_for_click_ = conf.read("time_for_click", 80);
+    test_files_ = conf.read("test_data", true);
+
+    std::string freesynDataDir = conf.read("freesynd_data_dir", File::getDefaultFreesyndDataFolder());
+    File::setFreesyndDataFolder(freesynDataDir);
+
+    std::string originalDataDir = conf.read("data_dir", freesynDataDir);
+    File::setOriginalDataFolder(originalDataDir);
+
+    std::string saveDataDir = conf.read("save_data_dir", File::getDefaultIniFolder());
+    File::setSaveDataFolder(saveDataDir);
+
+    if (!iniExist) {
+        // Save first ini file with default parameters
+        try {
+            FSINFO(Log::k_FLG_IO, "AppContext", "readConfiguration", ("Write configuration file %s\n", iniPath_.c_str()));
+            conf.add("fullscreen", fullscreen_);
+            conf.add("play_intro", playIntro_);
+            conf.add("time_for_click", time_for_click_);
+            conf.add("test_data", test_files_);
+            conf.add("freesynd_data_dir", freesynDataDir);
+            conf.add("data_dir", originalDataDir);
+            conf.add("save_data_dir", saveDataDir);
+
+            std::ofstream file(iniPath_.c_str(), std::ios::out | std::ios::trunc);
+            if (file) {
+                file << conf;
+                file.close();
+            } else {
+                FSERR(Log::k_FLG_IO, "AppContext", "readConfiguration", ("Cannot write new configuration to file"))
+                return false;
+            }
+        } catch (...) {
+            FSERR(Log::k_FLG_IO, "AppContext", "readConfiguration", ("Error while writing configuration to file"))
+            return false;
+        }
+    }
+
+    return readLanguage(conf);
 }
 
-void AppContext::readLanguage(const ConfigFile& conf) {
+bool AppContext::readLanguage(const ConfigFile& conf) {
     std::string filename;
 
     switch (conf.read("language", 0)) {
@@ -95,9 +130,11 @@ void AppContext::readLanguage(const ConfigFile& conf) {
 
     try {
         language_ = new ConfigFile(File::getFreesyndDataFullPath(filename));
+        return true;
     } catch (...) {
         FSERR(Log::k_FLG_IO, "AppContext", "setLanguage", ("Unable to load language file %s!\n", filename.c_str()));
         language_ = NULL;
+        return false;
     }
 }
 

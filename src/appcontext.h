@@ -70,7 +70,7 @@ public:
     void getMessage(const std::string & id, std::string & msg);
 
 private:
-    void readLanguage(const ConfigFile& conf);
+    bool readLanguage(const ConfigFile& conf);
 
 private:
     /*! True means the game will run in fullscreen. */

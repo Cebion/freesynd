@@ -28,22 +28,24 @@
 // Logging is enabled only in debug mode
 #ifdef _DEBUG
 
-#define LOG(t, c, m, str) { if (Log::canLog(t)) {Log::logHeader(t, c, m); Log::logMessage str;} }  // NOLINT
-#define FSERR(t, c, m, str) { if (Log::canLog(t)) {Log::logHeader(t, c, m); Log::logMessage str;} printf str; }  // NOLINT
+#define LOG(t, c, m, str) { if (Log::canLog(t)) {Log::logHeader(t, c, m, "DEBUG"); Log::logMessage str;} }  // NOLINT
+#define FSERR(t, c, m, str) { if (Log::canLog(t)) {Log::logHeader(t, c, m, "ERROR"); Log::logMessage str;} printf ("ERROR: "); printf str; }  // NOLINT
+#define FSINFO(t, c, m, str) { if (Log::canLog(t)) {Log::logHeader(t, c, m, "INFO "); Log::logMessage str;} printf ("INFO : "); printf str; }  // NOLINT
 
 #else
 
 #define LOG(type, comp, meth, str)
-#define FSERR(t, c, m, str) { printf str; }  // NOLINT
+#define FSERR(t, c, m, str)  { printf ("ERROR: "); printf str; }  // NOLINT
+#define FSINFO(t, c, m, str) { printf ("INFO : "); printf str; }  // NOLINT
 
 #endif
 
 //! A logger for displaying debug informations.
-/*! 
+/*!
  * The logging system allows the application to write debug
- * informations to a file. There are different categories (called type) of 
+ * informations to a file. There are different categories (called type) of
  * information which can be filtered through the mask value.<BR>
- * The logger must initialized by calling the initialize() method and 
+ * The logger must initialized by calling the initialize() method and
  * closed using the close() method.<BR>
  * The logger can then be used with the LOG macro which is enabled only in debug mode.
  * Here is an example of a call to the logger :<BR>
@@ -79,7 +81,7 @@ class Log {
     static int canLog(int type);
 
     //! Prints the message header
-    static void logHeader(int type, const char * comp, const char * method);
+    static void logHeader(int type, const char * comp, const char * method, const char * level);
 
     //! Prints the log message
     static void logMessage(const char * format, ...);

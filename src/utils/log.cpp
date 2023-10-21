@@ -44,7 +44,7 @@ int Log::logMask_ = Log::k_FLG_ALL;
 
 /*!
  * Returns a string representing the given type of category.
- * If the flag is not part of the regular types, an UNKNW string is 
+ * If the flag is not part of the regular types, an UNKNW string is
  * returned.
  * \param type One if the k_FLG_XXX except k_FLG_NONE or k_FLG_ALL.
  * \return A human readable representation of the type.
@@ -73,7 +73,7 @@ const char * Log::typeToStr(int type) {
 /*!
  * This method sets the logging mask to specify which type of log is enable
  * and then tries to open the logging file.
- * \param mask Either k_FLG_NONE to disable the logger or k_FLG_ALL to 
+ * \param mask Either k_FLG_NONE to disable the logger or k_FLG_ALL to
  * enable all types or a combination k_FLG_XXX with the '|' operator.
  * \param filename The name of the log file.
  * \return true if the logging system has correctly been initialized.
@@ -137,9 +137,9 @@ void Log::logMessage(const char * format, ...) {
  * \param comp The component that issued the logging order.
  * \param method The method that issued the logging order.
  */
-void Log::logHeader(int type, const char * comp, const char * method) {
+void Log::logHeader(int type, const char * comp, const char * method, const char * level) {
     if (logfile_) {
-        fprintf(logfile_, "[%s] [%s] [%s] : ", typeToStr(type), comp, method);
+        fprintf(logfile_, "[%s] [%s] [%s] [%s]: ", level, typeToStr(type), comp, method);
         fflush(logfile_);
     }
 };

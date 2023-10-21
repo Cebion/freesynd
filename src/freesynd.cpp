@@ -28,12 +28,6 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "common.h"
-#include "utils/file.h"
-#include "app.h"
-#include "utils/log.h"
-#include "default_ini.h"
-
 #ifdef _WIN32
 #include <windows.h>
 #include <io.h>
@@ -43,6 +37,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #endif
+
+#include "common.h"
+#include "app.h"
+#include "utils/file.h"
+#include "utils/log.h"
 
 #ifdef SYSTEM_SDL
 #ifdef _WIN32
@@ -207,26 +206,6 @@ int main(int argc, char *argv[]) {
     // Initialize log
     Log::initialize(Log::k_FLG_ALL, "game.log");
 #endif
-
-    if (iniPath.size() == 0) {
-        iniPath.assign(File::getDefaultIniFolder());
-        iniPath.append("/freesynd.ini");
-#ifdef _WIN32
-        if (_access(iniPath.c_str(), 0) != 0)
-#else
-        struct stat st;
-        if (stat(iniPath.c_str(), &st))
-#endif
-        {
-            FILE *f = fopen(iniPath.c_str(), "w");
-            if (!f) {
-                FSERR(Log::k_FLG_IO, "Freesynd", "main", ("Cannot create default ini file at %s", iniPath.c_str()))
-                return -1;
-            }
-            fwrite(embedded_default_ini_data, 1, embedded_default_ini_size, f);
-            fclose(f);
-        }
-    }
 
     LOG(Log::k_FLG_INFO, "Main", "main", ("----- Initializing application..."))
     std::auto_ptr<App> app(new App(disable_sound));

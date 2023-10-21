@@ -41,6 +41,8 @@ public:
     static std::string getDefaultIniFolder();
     //! Return the default dir path for Freesynd data files
     static std::string getDefaultFreesyndDataFolder();
+    //! Return the path to ini file base on iniFolder
+    static bool getIniFullPath(const std::string& iniFolder, std::string& iniFullPath);
     //! Sets the path to the original data files.*/
     static void setOriginalDataFolder(const std::string& path);
     //! Sets the path to our data files.*/
