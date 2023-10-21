@@ -36,6 +36,8 @@
  */
 class File {
 public:
+    static std::string defaultIniFolder();
+    static std::string getFreesyndDataFullPath();
     //! Sets the path to the original data files.*/
     static void setDataPath(const std::string& path);
     //! Sets the path to our data files.*/
@@ -56,6 +58,9 @@ public:
     //! Returns the list of game saved names
     static void getGameSavedNames(std::vector<std::string> &files);
     static uint8 *loadOriginalFileToMem(const std::string& filename, int &filesize);
+
+    //! Tests Syndicate original data for existence and correctness
+    static bool testOriginalData(const std::string& iniPath);
 
 private:
     static void processSaveFile(const std::string& filename, std::vector<std::string> &files);

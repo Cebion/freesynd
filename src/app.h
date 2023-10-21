@@ -113,23 +113,12 @@ class App : public Singleton < App > {
     //! Load game from a file
     bool loadGameFromFile(int fileSlot);
 
-    static std::string defaultIniFolder();
-
 #ifdef _DEBUG
 public:
     uint8 debug_breakpoint_trigger_;
 #endif
 
 private:
-    //! Reads the configuration file
-    bool readConfiguration();
-
-    //! Tests Syndicate original data for existence and correctness
-    bool testOriginalData();
-
-    //! Sets the intro flag to false in the config file
-    void updateIntroFlag();
-
     void cheatFunds() {
         g_Session.setMoney(100000000);
     }
@@ -154,8 +143,6 @@ private:
     std::auto_ptr<GameController> game_ctlr_;
     std::auto_ptr<Screen> screen_;
     std::auto_ptr<System> system_;
-
-    std::string iniPath_;
 
     GameSpriteManager game_sprites_;
     MenuManager menus_;

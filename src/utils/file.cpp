@@ -41,6 +41,7 @@
 #endif
 
 #include "file.h"
+#include "ccrc32.h"
 #include "dernc.h"
 #include "log.h"
 #include "portablefile.h"
@@ -48,6 +49,101 @@
 std::string File::dataPath_ = "./data/";
 std::string File::ourDataPath_ = "./data/";
 std::string File::homePath_ = "./";
+
+#ifdef _WIN32
+static string exeFolder() {
+    char buf[1024];
+    GetModuleFileName(NULL, buf, 1024);
+    string tmp(buf);
+    size_t pos = tmp.find_last_of('\\');
+    if (pos != std::string::npos) tmp.erase(pos + 1);
+    else tmp = ".";
+    return tmp;
+}
+#endif
+
+#ifdef __APPLE__
+static bool getResourcePath(string& resourcePath) {
+    // let's check to see if we're inside an application bundle first.
+    CFBundleRef main = CFBundleGetMainBundle();
+    CFStringRef appid = NULL;
+    if (main) appid = CFBundleGetIdentifier(main);
+    if (!appid) return false;
+
+    // we're in an app bundle.
+    printf("OS X application bundle detected.\n");
+    CFURLRef url = CFBundleCopyResourcesDirectoryURL(main);
+    if (!url) {
+        // this shouldn't happen.
+        printf("Unable to locate resources.\n");
+        exit(1);
+    }
+    FSRef fs;
+    if (!CFURLGetFSRef(url, &fs)) {
+        // this shouldn't happen.
+        printf("Unable to translate URL.\n");
+        exit(1);
+    }
+
+    char *buf = (char *)malloc(1024);
+    FSRefMakePath(&fs, (UInt8 *)buf, 1024);
+    CFRelease(url);
+
+    resourcePath.assign(buf);
+    resourcePath.push_back('/');
+    free(buf);
+    return true;
+}
+#endif
+
+std::string File::defaultIniFolder()
+{
+    std::string folder;
+#ifdef _WIN32
+    // Under windows config file is in the same directory as freesynd.exe
+    folder.assign(exeFolder());
+    // Since we're defaulting to the exe's folder, no need to try to create a directory.
+#elif defined(__APPLE__)
+    // Make a symlink for convenience for *nix people who own Macs.
+    folder.assign(getenv("HOME"));
+    folder.append("/.freesynd");
+    symlink("Library/Application Support/FreeSynd", folder.c_str());
+    // On OS X, applications tend to store config files in this sort of path.
+    folder.assign(getenv("HOME"));
+    folder.append("/Library/Application Support/FreeSynd");
+    mkdir(folder.c_str(), 0755);
+#else
+    // Under unix it's in the user home directory
+    folder.assign(getenv("HOME"));
+    folder.append("/.freesynd");
+    mkdir(folder.c_str(), 0755);
+#endif
+    // note that we don't care if the mkdir() calls above succeed or not.
+    // if they fail because they already exist, then it's no problem.
+    // if they fail for any other reason, then we won't be able to open
+    // or create freesynd.ini, and we'll surely detect that below.
+
+    return folder;
+}
+
+std::string File::getFreesyndDataFullPath() {
+    std::string fsDataFullPath;
+#ifdef _WIN32
+    fsDataFullPath = defaultIniFolder() + "\\data";
+#elif defined(__APPLE__)
+    if (getResourcePath(fsDataFullPath)) {
+        // this is an app bundle, so let's default the data dir
+        // to the one included in the app bundle's resources.
+        fsDataFullPath += "data/";
+    } else {
+        FSERR(Log::k_FLG_GFX, "File", "getFreesyndDataFullPath", ("Unable to locate app bundle resources.\n"));
+        return false;
+    }
+#else
+    fsDataFullPath = PREFIX"/data";
+#endif
+
+}
 
 /*!
  * The methods returns a string composed of the root path and given file name.
@@ -259,4 +355,68 @@ void File::getGameSavedNames(std::vector<std::string> &files) {
 
     closedir(rep);
 #endif
+}
+
+bool File::testOriginalData(const std::string& iniPath) {
+
+    LOG(Log::k_FLG_IO, "File", "testOriginalData", ("Testing original Syndicate data..."));
+
+    std::string crcflname = File::dataFullPath("ref/original_data.crc");
+    std::ifstream od(crcflname.c_str());
+    if (od.fail()) {
+        FSERR(Log::k_FLG_IO, "File", "testOriginalData",
+            ("Checksums file for original data is not found. Look at INSTALL/README file for possible solutions."));
+        return false;
+    }
+
+    CCRC32 crc32_test;
+    crc32_test.Initialize();
+    bool rsp = true;
+    while (od) {
+        std::string line;
+        std::getline(od, line);
+        if (line.size() > 0) {
+            std::string::size_type pos = line.find(' ');
+            if (pos != std::string::npos) {
+                // skipping commented
+                if (line[0] == '#' || line[0] == ';')
+                    continue;
+                std::string flname = line.substr(0, pos);
+                std::string str_crc32 = line.substr(pos+1);
+                uint32 ui_crc32 = 0;
+                uint32 multiply = 1 << (4 * 7);
+                // String hex to uint32
+                for (char i = 0; i < 8; i++) {
+                    char c = str_crc32[i];
+                    if ( c >= '0' && c <= '9')
+                        c -= '0';
+                    if ( c >= 'a' && c <= 'z')
+                        c -= 'a' - 10;
+                    ui_crc32 += c * multiply;
+                    multiply >>= 4;
+                }
+                int sz;
+                uint8 *data = File::loadOriginalFileToMem(flname, sz);
+                if (!data) {
+                    FSERR(Log::k_FLG_IO, "App", "testOriginalData", ("file not found \"%s\"\n", flname.c_str()));
+                    printf("file not found \"%s\". Look at INSTALL/README file for possible solutions.\n", flname.c_str());
+                    rsp = false;
+                    continue;
+                }
+                if (ui_crc32 != crc32_test.FullCRC(data, sz)) {
+                    rsp = false;
+                    FSERR(Log::k_FLG_IO, "App", "testOriginalData", ("file test failed \"%s\"\n", flname.c_str()));
+                }
+                delete[] data;
+            }
+        }
+    }
+    if (rsp == false) {
+        FSERR(Log::k_FLG_IO, "File", "testOriginalData", ("failed to test original Syndicate data..."))
+    }
+    od.close();
+
+    LOG(Log::k_FLG_IO, "App", "testOriginalData", ("Test passed. CRC32 for data is correct."));
+
+    return rsp;
 }

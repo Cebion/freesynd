@@ -27,17 +27,68 @@
 #include "utils/file.h"
 #include "utils/log.h"
 
-AppContext::AppContext() { 
-    time_for_click_ = 80; 
+AppContext::AppContext() {
+    time_for_click_ = 80;
     fullscreen_ = false;
     playIntro_ = true;
     language_ = NULL;
 }
 
-AppContext::~AppContext() { 
+AppContext::~AppContext() {
     if (language_) {
         delete language_;
         language_ = NULL;
+    }
+}
+
+// TODO move to File class
+static void addMissingSlash(string& str) {
+    if (str[str.length() - 1] != '/') str.push_back('/');
+}
+
+bool AppContext::readConfiguration(const std::string& iniPath) {
+    try {
+        File::setHomePath(File::defaultIniFolder());
+
+        iniPath_ = iniPath;
+        ConfigFile conf(iniPath);
+
+        fullscreen_ = conf.read("fullscreen", false);
+        playIntro_ = conf.read("play_intro", true);
+        time_for_click_ = conf.read("time_for_click", 80);
+
+        test_files_ = conf.read("test_data", true);
+
+        string freesyndDataDir = conf.read("freesynd_data_dir", File::getFreesyndDataFullPath());
+        addMissingSlash(freesyndDataDir);
+        File::setOurDataPath(freesyndDataDir);
+
+        string origDataDir = conf.read("data_dir", freesyndDataDir);
+        addMissingSlash(origDataDir);
+        File::setDataPath(origDataDir);
+
+        switch (conf.read("language", 0)) {
+            case 0:
+                setLanguage(AppContext::ENGLISH);
+                break;
+            case 1:
+                setLanguage(AppContext::FRENCH);
+                break;
+            case 2:
+                setLanguage(AppContext::ITALIAN);
+                break;
+            case 3:
+                setLanguage(AppContext::GERMAN);
+                break;
+            default:
+                setLanguage(AppContext::ENGLISH);
+                break;
+        }
+
+        return true;
+    } catch (...) {
+        FSERR(Log::k_FLG_IO, "AppContext", "readConfiguration", ("Unable to load configuration file %s!\n", iniPath.c_str()));
+        return false;
     }
 }
 
@@ -66,7 +117,7 @@ void AppContext::setLanguage(FS_Lang lang) {
         language_ = new ConfigFile(filename);
         curr_language_ = lang;
     } catch (...) {
-        printf("ERROR : Unable to load language file %s.\n", filename.c_str());
+        FSERR(Log::k_FLG_IO, "AppContext", "setLanguage", ("Unable to load language file %s!\n", filename.c_str()));
         language_ = NULL;
     }
 }
@@ -80,5 +131,43 @@ std::string AppContext::getMessage(const std::string & id) {
 void AppContext::getMessage(const std::string & id, std::string & msg) {
     if (!language_ || !language_->readInto(msg, id)) {
         msg = "?";
+    }
+}
+
+/*!
+ * Set the play intro parameter in the config file.
+ * \param files
+ */
+void AppContext::updateIntroFlag() {
+    try {
+        ConfigFile conf(iniPath_);
+        conf.add("play_intro", false);
+
+        std::ofstream file(iniPath_.c_str(), std::ios::out | std::ios::trunc);
+        if (file) {
+            file << conf;
+            file.close();
+        } else {
+            LOG(Log::k_FLG_GFX, "App", "updateIntroFlag", ("Could not update configuration file!"))
+        }
+    } catch (...) {
+        LOG(Log::k_FLG_GFX, "App", "updateIntroFlag", ("Could not update configuration file!"))
+    }
+}
+
+void AppContext::deactivateTestFlag() {
+    try {
+        ConfigFile conf(iniPath_);
+        conf.add("test_data", false);
+
+        std::ofstream file(iniPath_.c_str(), std::ios::out | std::ios::trunc);
+        if (file) {
+            file << conf;
+            file.close();
+        } else {
+            FSERR(Log::k_FLG_IO, "AppContext", "deactivateTestFlag", ("Could not update configuration file for test_data parameter!"))
+        }
+    } catch (...) {
+        FSERR(Log::k_FLG_IO, "AppContext", "deactivateTestFlag", ("Could not update configuration file for test_data parameter!"))
     }
 }

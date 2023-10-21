@@ -49,20 +49,27 @@ public:
     AppContext();
     ~AppContext();
 
+    //! Reads the game config file from the given path
+    bool readConfiguration(const std::string& iniPath);
+
     bool isFullScreen() { return fullscreen_; }
-    void setFullScreen(bool isFull) { fullscreen_ = isFull; }
 
     bool isPlayIntro() { return playIntro_; }
-    void setPlayIntro(bool doPlay) { playIntro_ = doPlay; }
 
-    void setTimeForClick(int32 time) { time_for_click_ = time; }
+    bool isTestFiles() { return test_files_; }
+
+    //! Sets the intro flag to false in the config file
+    void updateIntroFlag();
+    //! Sets the test files flag to false in the config file
+    void deactivateTestFlag();
+
     int32 getTimeForClick() { return time_for_click_; }
 
     void setLanguage(FS_Lang lang);
     FS_Lang currLanguage(void) {return curr_language_; }
     std::string getMessage(const std::string & id);
     void getMessage(const std::string & id, std::string & msg);
-    
+
 private:
     /*! True means the game will run in fullscreen. */
     bool fullscreen_;
@@ -72,6 +79,10 @@ private:
      * if it will be longer it will be treated as dragging
     */
     int32 time_for_click_;
+    /*! True means data files will be verified.*/
+    bool test_files_;
+    /*! Path to game config file. */
+    std::string iniPath_;
     /*! Language file. */
     ConfigFile  *language_;
     FS_Lang curr_language_;
