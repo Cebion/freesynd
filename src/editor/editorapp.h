@@ -94,7 +94,6 @@ class EditorApp : public Singleton < EditorApp > {
 
     void waitForKeyPress();
 
-    static std::string defaultIniFolder();
     //! Return the list of missions found in the search menu
     std::list<int> & getMissionResultList() { return searchResLst_;}
 
@@ -104,14 +103,6 @@ public:
 #endif
 
 private:
-    //! Reads the configuration file
-    bool readConfiguration();
-
-    //! Tests Syndicate original data for existence and correctness
-    bool testOriginalData();
-
-    //! Sets the intro flag to false in the config file
-    void updateIntroFlag();
 
 private:
     bool running_;
