@@ -40,7 +40,7 @@
 
 #include "fs-utils/common.h"
 #include "app.h"
-#include "utils/file.h"
+#include "fs-utils/io/file.h"
 #include "fs-utils/log/log.h"
 
 #ifdef SYSTEM_SDL

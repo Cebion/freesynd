@@ -23,10 +23,10 @@
  *                                                                      *
  ************************************************************************/
 
-#include "utils/file.h"
 #include "font.h"
 #include "screen.h"
 #include "cp437.h"
+#include "fs-utils/io/file.h"
 
 #include <stdlib.h>
 
@@ -214,7 +214,7 @@ void Font::drawText(int x, int y, const char *text, bool dos, bool x2) {
                 y_offset = 2 * sc;
 
             s->draw(x, y + y_offset, 0, false, x2);
-            
+
             x += s->width() * sc - sc;
         }
     }
@@ -307,7 +307,7 @@ void MenuFont::drawText(int x, int y, bool dos, const char *text, bool highlight
             }
 
             s->draw(x, y + y_offset, 0, false, x2);
-            
+
             x += s->width() * sc - sc;
         }
     }

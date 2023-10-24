@@ -40,12 +40,12 @@
 #include <sys/types.h>
 #endif
 
-#include "file.h"
+#include "fs-utils/io/file.h"
 #include "fs-utils/crc/ccrc32.h"
 #include "fs-utils/crc/dernc.h"
 #include "fs-utils/log/log.h"
-#include "portablefile.h"
-#include "version.h"
+#include "fs-utils/io/portablefile.h"
+#include "fs-utils/io/version.h"
 
 std::string File::dataPath_ = "./data/";
 std::string File::ourDataPath_ = "./data/";

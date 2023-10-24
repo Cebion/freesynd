@@ -29,7 +29,7 @@
 
 #ifdef HAVE_SDL_MIXER
 
-#include "utils/file.h"
+#include "fs-utils/io/file.h"
 #include "sdlmixermusic.h"
 
 #include <SDL.h>

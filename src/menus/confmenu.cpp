@@ -34,7 +34,6 @@
 #include "menus/gamemenuid.h"
 #include "core/gamecontroller.h"
 #include "core/gamesession.h"
-#include "utils/file.h"
 #include "gfx/screen.h"
 #include "system.h"
 
@@ -51,9 +50,9 @@ Menu(m, fs_game_menus::kMenuIdConf, fs_game_menus::kMenuIdMain, "mconfup.dat", "
     toAcceptColourId_ = 0;
     tempLogo_ = 0;
     tempColourId_ = 0;
-    
+
     panelMsgId_ = addStatic(280, 32, 330, "#CONF_MAIN_MSG", FontManager::SIZE_2, true);
-    
+
     logoButId_ = addOption(325, 65, 240, 20, "#CONF_COL_LOGO_BUT", FontManager::SIZE_2, MENU_NO_MENU, true, false, Sprite::MSPR_BULLET_D, Sprite::MSPR_BULLET_L);
     compNameButId_ = addOption(325, 90, 240, 20, "#CONF_COM_NAME_BUT", FontManager::SIZE_2, MENU_NO_MENU, true, false, Sprite::MSPR_BULLET_D, Sprite::MSPR_BULLET_L);
     userNameButId_ = addOption(325, 115, 240, 20, "#CONF_YOUR_NAME_BUT", FontManager::SIZE_2, MENU_NO_MENU, true, false, Sprite::MSPR_BULLET_D, Sprite::MSPR_BULLET_L);

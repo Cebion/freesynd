@@ -33,8 +33,8 @@
 
 #include "fs-utils/common.h"
 #include "model/weapon.h"
-#include "utils/seqmodel.h"
-#include "utils/portablefile.h"
+#include "fs-utils/misc/seqmodel.h"
+#include "fs-utils/io/portablefile.h"
 
 /*!
  * Weapon manager class.

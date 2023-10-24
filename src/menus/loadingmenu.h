@@ -25,7 +25,7 @@
 #ifndef LOADINGMENU_H
 #define LOADINGMENU_H
 
-#include "utils/timer.h"
+#include "fs-utils/misc/timer.h"
 #include "menus/menu.h"
 
 /*!

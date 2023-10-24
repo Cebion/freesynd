@@ -23,12 +23,12 @@
 #include "app.h"
 #include "menus/flimenu.h"
 #include "menus/gamemenuid.h"
-#include "utils/file.h"
+#include "fs-utils/io/file.h"
 #include "gfx/screen.h"
 
 const FrameEvent intro[] = {
     { 1,  msc::TRACK_INTRO, snd::NO_SOUND, 0x0, NULL }, // Play track
-    { 15, msc::NO_TRACK, snd::NO_SOUND,        0x0, "INTRO_0" }, 
+    { 15, msc::NO_TRACK, snd::NO_SOUND,        0x0, "INTRO_0" },
     { 39, msc::NO_TRACK, snd::NO_SOUND,        0x0, NULL }, // clear subtitle
     { 44, msc::NO_TRACK, snd::NO_SOUND,        0x0, "INTRO_1" },
     { 62, msc::NO_TRACK, snd::NO_SOUND,        0x0, NULL }, // clear subtitle
@@ -203,7 +203,7 @@ bool FliMenu::loadNextFli() {
     return false;
 }
 
-void FliMenu::handleShow() 
+void FliMenu::handleShow()
 {
     // Loads the first Fli
     if (!fliList_.empty()) {
@@ -211,7 +211,7 @@ void FliMenu::handleShow()
     }
 }
 
-void FliMenu::handleTick(int elapsed) 
+void FliMenu::handleTick(int elapsed)
 {
     if (fliPlayer_.hasFrames()) {
         FliDesc desc = fliList_.at(fliIndex_ - 1);
@@ -312,8 +312,8 @@ bool FliMenu::handleUnknownKey(Key key, const int modKeys) {
 
     return true;
 }
-    
-void FliMenu::handleLeave() 
+
+void FliMenu::handleLeave()
 {
     if (pData_) {
         delete[] pData_;

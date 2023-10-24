@@ -34,8 +34,8 @@
 #include "fs-utils/common.h"
 #include "model/weaponholder.h"
 #include "modowner.h"
-#include "utils/portablefile.h"
-#include "version.h"
+#include "fs-utils/io/portablefile.h"
+#include "fs-utils/io/version.h"
 
 /*!
  * Stores information about agent health, weapons inventory and modifications.

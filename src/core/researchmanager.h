@@ -27,9 +27,9 @@
 #include <fstream>
 
 #include "model/research.h"
-#include "utils/seqmodel.h"
-#include "utils/portablefile.h"
-#include "version.h"
+#include "fs-utils/misc/seqmodel.h"
+#include "fs-utils/io/portablefile.h"
+#include "fs-utils/io/version.h"
 
 
 /*!

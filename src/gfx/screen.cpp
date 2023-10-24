@@ -26,7 +26,7 @@
 
 #include "fs-utils/common.h"
 #include "screen.h"
-#include "utils/file.h"
+#include "fs-utils/io/file.h"
 
 const int Screen::kScreenWidth = 640;
 const int Screen::kScreenHeight = 400;

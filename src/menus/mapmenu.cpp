@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "utils/file.h"
+#include "fs-utils/io/file.h"
 #include "menus/mapmenu.h"
 #include "menus/gamemenuid.h"
 #include "core/gamesession.h"
@@ -268,7 +268,7 @@ void MapMenu::handleTick(int elapsed) {
     }
 }
 
-/*! 
+/*!
  * Update the game time display
  */
 void MapMenu::updateClock() {

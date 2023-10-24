@@ -28,8 +28,8 @@
 
 #include "fs-utils/common.h"
 #include "agent.h"
-#include "utils/seqmodel.h"
-#include "utils/portablefile.h"
+#include "fs-utils/misc/seqmodel.h"
+#include "fs-utils/io/portablefile.h"
 
 extern const char * const g_AgentNames[];
 extern const int g_NumAgentNames;

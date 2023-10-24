@@ -27,7 +27,7 @@
 #include "gfx/screen.h"
 #include "system.h"
 #include "sound/audio.h"
-#include "utils/file.h"
+#include "fs-utils/io/file.h"
 #include "fs-utils/log/log.h"
 
 #include <SDL_image.h>

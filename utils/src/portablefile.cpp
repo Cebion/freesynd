@@ -20,7 +20,7 @@
  *                                                                      *
  ************************************************************************/
 
-#include "portablefile.h"
+#include "fs-utils/io/portablefile.h"
 
 // runtime endianness test
 static const uint32 endianness_one = 1;

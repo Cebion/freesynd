@@ -28,7 +28,7 @@
 
 #include "keys.h"
 #include "gfx/fontmanager.h"
-#include "utils/seqmodel.h"
+#include "fs-utils/misc/seqmodel.h"
 
 class Menu;
 
@@ -71,7 +71,7 @@ public:
         visible_ = visible;
         peer_ = peer;
     }
-    
+
     /*!
      * Default constructor.
      */
@@ -190,7 +190,7 @@ class Sprite;
  */
 class ActionWidget : public Widget {
 public:
-    ActionWidget(Menu *peer, int x, int y, int width, int height, bool visible, bool isEnabled = true) 
+    ActionWidget(Menu *peer, int x, int y, int width, int height, bool visible, bool isEnabled = true)
         : Widget(peer, x, y, width, height, visible) {
             enabled_ = isEnabled;
     }
@@ -218,7 +218,7 @@ protected:
 
 //! A button widget.
 /*!
- * This class represents a button. A button can lead to another screen 
+ * This class represents a button. A button can lead to another screen
  * which name is stored in the field "to".
  * It can have a widget in front of its text (like an arrow or a bullet).
  */
@@ -249,12 +249,12 @@ protected:
     MenuText text_;
     /*! The id of the next menu.*/
     int to_;
-    /*! 
+    /*!
      * The widget to display when button is dark.
      * When id is zero, there is no widget.
     */
     Sprite *darkWidget_;
-    /*! 
+    /*!
      * The widget to display when button is highlighted.
      * When id is zero, there is no widget.
      */
@@ -268,7 +268,7 @@ protected:
 class ToggleAction;
 
 /*!
- * A group is used to track the 
+ * A group is used to track the
  * mutual exclusion between toggle actions.
  * Each time a button is selected, the others
  * must be unselected.
@@ -296,7 +296,7 @@ private:
 class ToggleAction : public Option {
 public:
     //! Constructs a new button.
-    ToggleAction(Menu *peer, int x, int y, int width, int height, 
+    ToggleAction(Menu *peer, int x, int y, int width, int height,
                     const char *text, MenuFont *pFont, bool selected, Group *pGroup);
 
     void executeAction(const int modKeys);
@@ -329,7 +329,7 @@ public:
     virtual ~ListBox();
 
     //! Draw the widget on screen
-    void draw(); 
+    void draw();
 
     //! Callback method to respond to mouse motion event
     void handleMouseMotion(int x, int y, int state, const int modKeys);
@@ -352,7 +352,7 @@ protected:
 };
 
 /*!
- * 
+ *
  * A Team list box has a title, displayed at the top of the list and prints a default
  * label for all empty lines.
  */
@@ -364,7 +364,7 @@ public:
     ~TeamListBox();
 
     //! Draw the widget on screen
-    void draw(); 
+    void draw();
 
     //! Callback method to respond to mouse motion event
     void handleMouseMotion(int x, int y, int state, const int modKeys);
@@ -391,7 +391,7 @@ protected:
 
 //! A text field widget.
 /*!
- * 
+ *
  */
 class TextField : public ActionWidget {
 public:

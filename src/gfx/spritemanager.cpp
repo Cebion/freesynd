@@ -26,7 +26,7 @@
 #include <assert.h>
 
 #include "gfx/spritemanager.h"
-#include "utils/file.h"
+#include "fs-utils/io/file.h"
 
 SpriteManager::SpriteManager():sprites_(NULL), sprite_count_(0)
 {
@@ -164,9 +164,9 @@ void GameSpriteManager::load()
         if (esprite) {
             char tmp[1024];
             sprintf(tmp, "sprites/%i.png", esprite);
-            sprites_[esprite].loadSpriteFromPNG(tmp);        
+            sprites_[esprite].loadSpriteFromPNG(tmp);
         }
-    } 
+    }
 
     fp = File::openOriginalFile("HFRA-0.TXT");
     if (fp) {
@@ -175,7 +175,7 @@ void GameSpriteManager::load()
             GameSpriteFrame f;
             if (*line == '#')
                 continue;
-            sscanf(line, "%i %i %i %i %i", &f.first_element_, &f.width_, 
+            sscanf(line, "%i %i %i %i %i", &f.first_element_, &f.width_,
                     &f.height_, &f.flags_, &f.next_frame_);
             assert(f.first_element_ < (int) elements_.size());
             frames_.push_back(f);

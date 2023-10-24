@@ -20,7 +20,7 @@
  *                                                                      *
  ************************************************************************/
 
-#include "seqmodel.h"
+#include "fs-utils/misc/seqmodel.h"
 
 SequenceModel::~SequenceModel() {
     listeners_.clear();

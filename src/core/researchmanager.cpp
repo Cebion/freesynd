@@ -23,7 +23,7 @@
 
 #include "researchmanager.h"
 #include "fs-utils/log/log.h"
-#include "utils/file.h"
+#include "fs-utils/io/file.h"
 #include "fs-utils/io/configfile.h"
 #include "core/gamecontroller.h"
 #include "appcontext.h"

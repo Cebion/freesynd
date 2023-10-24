@@ -29,8 +29,8 @@
 
 #include "model/weapon.h"
 #include "model/mod.h"
-#include "utils/portablefile.h"
-#include "version.h"
+#include "fs-utils/io/portablefile.h"
+#include "fs-utils/io/version.h"
 
 /*!
  * Represents a research on a specific field.

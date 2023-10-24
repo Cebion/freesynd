@@ -27,7 +27,7 @@
 #include "soundmanager.h"
 #include "config.h"
 #include "audio.h"
-#include "utils/file.h"
+#include "fs-utils/io/file.h"
 #include "fs-utils/log/log.h"
 
 SoundManager::SoundManager(bool disabled):tabentry_startoffset_(58), tabentry_offset_(32), disabled_(disabled)

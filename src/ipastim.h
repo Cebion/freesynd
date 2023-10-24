@@ -23,7 +23,7 @@
 #ifndef FreeSynd_ipastim_h
 #define FreeSynd_ipastim_h
 
-#include "utils/timer.h"
+#include "fs-utils/misc/timer.h"
 
 // Stores the values for the Intelligence, Perception and
 // Adrenaline bars. Also calculates the multipliers to things
@@ -47,11 +47,11 @@ public:
         return IPANames[(int)ipa_type_];
     }
 #endif
-    
+
     // Return value varies from 0.5 to 2 and returns 1
     // for 'neutral' adrenaline.
     float getMultiplier() const;
-    
+
     // We are using percentages, the original data files are using uint8 256 ranges
     void setLevels256(int amount, int dependency, int effect)
     {
@@ -61,12 +61,12 @@ public:
             (int)((float)effect/256.0*100.0)
         );
     }
-    
+
     // Note: this method takes percentages as arguments, use
     // setLevels256 to use the values from Syndicate's data files.
     // "effect" may not currently be used.
     void setLevels(int amount, int dependency, int effect = 0);
-    
+
     void setAmount(int percentage) { amount_ = percentage; }
 
     int getAmount()     const { return amount_; }

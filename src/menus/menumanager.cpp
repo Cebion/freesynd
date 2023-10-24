@@ -31,7 +31,7 @@
 #include "appcontext.h"
 #include "system.h"
 #include "fs-utils/io/configfile.h"
-#include "utils/file.h"
+#include "fs-utils/io/file.h"
 #include "fs-utils/log/log.h"
 #include "gfx/fliplayer.h"
 #include "gfx/screen.h"

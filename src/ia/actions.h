@@ -26,7 +26,7 @@
 
 #include "path.h"
 #include "mapobject.h"
-#include "utils/timer.h"
+#include "fs-utils/misc/timer.h"
 
 class Mission;
 class PedInstance;

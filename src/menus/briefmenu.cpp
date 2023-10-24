@@ -28,7 +28,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include "app.h"
-#include "utils/file.h"
 #include "briefmenu.h"
 #include "menus/gamemenuid.h"
 #include "core/missionbriefing.h"

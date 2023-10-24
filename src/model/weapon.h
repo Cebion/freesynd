@@ -33,7 +33,7 @@
 #include "mapobject.h"
 #include "sound/sound.h"
 #include "fs-utils/io/configfile.h"
-#include "utils/timer.h"
+#include "fs-utils/misc/timer.h"
 
 class FlamerShot;
 class PedInstance;

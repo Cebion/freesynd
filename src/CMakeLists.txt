@@ -78,10 +78,10 @@ set (SOURCES
 #	utils/configfile.cpp
 #	utils/ccrc32.cpp
 #	utils/dernc.cpp
-	utils/file.cpp
+#	utils/file.cpp
 #	utils/log.cpp
-	utils/portablefile.cpp
-	utils/seqmodel.cpp
+#	utils/portablefile.cpp
+#	utils/seqmodel.cpp
 	weaponmanager.cpp
 )
 
@@ -115,7 +115,7 @@ set(HEADERS
 	resources.h
 	system.h
 	system_sdl.h
-	version.h
+#	version.h
 	weaponmanager.h
 	core/gameevent.h
 	core/gamesession.h
@@ -177,16 +177,17 @@ set(HEADERS
 #	utils/configfile.h
 #	utils/ccrc32.h
 #	utils/dernc.h
-	utils/file.h
+#	utils/file.h
 #	utils/log.h
-	utils/portablefile.h
-	utils/seqmodel.h
+#	utils/portablefile.h
+#	utils/seqmodel.h
 #	utils/singleton.h
-	utils/timer.h
-	utils/utf8.h
-	utils/utf8/checked.h
-	utils/utf8/core.h
-	utils/utf8/unchecked.h)
+#	utils/timer.h
+#	utils/utf8.h
+#	utils/utf8/checked.h
+#	utils/utf8/core.h
+#	utils/utf8/unchecked.h
+)
 
 #source_group(Sources REGULAR_EXPRESSION .*.cpp)
 #source_group(Headers REGULAR_EXPRESSION .*.h)
@@ -273,12 +274,12 @@ if (BUILD_DEV_TOOLS)
 		ia/behaviour.cpp
 		mission.cpp
 #		utils/dernc.cpp
-		utils/file.cpp
+#		utils/file.cpp
 #		utils/log.cpp
-		utils/portablefile.cpp
+#		utils/portablefile.cpp
 #		utils/configfile.cpp
 #		utils/ccrc32.cpp
-		utils/seqmodel.cpp
+#		utils/seqmodel.cpp
 		editor/editorapp.cpp
 		editor/editormenufactory.cpp
 		editor/logoutmenu.cpp

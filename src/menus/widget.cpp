@@ -4,7 +4,7 @@
 #include "menus/menu.h"
 #include "menus/menumanager.h"
 #include "gfx/screen.h"
-#include "utils/utf8.h"
+#include "fs-utils/io/utf8.h"
 #include "appcontext.h"
 
 int Widget::widgetCnt = 0;
@@ -33,8 +33,8 @@ void Widget::setVisible(bool visible) {
     }
 }
 
-MenuText::MenuText(Menu *peer, int x, int y, const char *text, MenuFont *pFont, 
-                   bool highlighted, bool visible): 
+MenuText::MenuText(Menu *peer, int x, int y, const char *text, MenuFont *pFont,
+                   bool highlighted, bool visible):
             Widget(peer, x, y, 0, 0, visible)
 {
         highlighted_ = highlighted;
@@ -48,11 +48,11 @@ MenuText::MenuText(Menu *peer, int x, int y, const char *text, MenuFont *pFont,
         updateText(text);
 }
 
-MenuText::MenuText(Menu *peer, int x, int y, int width, const char *text, MenuFont *pFont, 
-                   bool highlighted, bool visible, bool centered): 
+MenuText::MenuText(Menu *peer, int x, int y, int width, const char *text, MenuFont *pFont,
+                   bool highlighted, bool visible, bool centered):
             Widget(peer, x, y, width, 0, visible)
 {
-        
+
     highlighted_ = highlighted;
     centered_ = centered;
     anchorX_ = x;
@@ -85,7 +85,7 @@ void MenuText::updateText(const char *text) {
     }
 }
 
-/*! 
+/*!
  * Modify the MenuText text.
  * If the given text starts with a '#', the remaining
  * text identifies a key in the language file.
@@ -96,7 +96,7 @@ void MenuText::setText(const char *text) {
     redraw();
 }
 
-/*! 
+/*!
  * Modify the MenuText text.
  * The given text can be a formated string.
  * If it starts with a '#', the remaining
@@ -148,10 +148,10 @@ void MenuText::draw() {
 }
 
 bool ActionWidget::isMouseOver(int x, int y) {
- 
-    return (x > x_  && 
-            x < x_ + width_ && 
-            y >= y_ && 
+
+    return (x > x_  &&
+            x < x_ + width_ &&
+            y >= y_ &&
             y < y_ + height_);
 }
 
@@ -226,7 +226,7 @@ Option::Option(Menu *peer, int x, int y, int width, int height, const char *text
 }
 
 Option::~Option() {
-    to_ = 0; 
+    to_ = 0;
 }
 /*!
  * Draw the widget at the current position.
@@ -293,7 +293,7 @@ void Group::selectButton(int id) {
     }
 }
 
-ToggleAction::ToggleAction(Menu *peer, int x, int y, int width, int height, 
+ToggleAction::ToggleAction(Menu *peer, int x, int y, int width, int height,
                             const char *text, MenuFont *pFont, bool selected, Group *pGroup)
 : Option(peer, x, y, width, height, text, pFont, -1, true) {
     group_ = pGroup;
@@ -367,7 +367,7 @@ void ListBox::draw() {
 }
 
 void ListBox::handleMouseMotion(int x, int y, int state, const int modKeys) {
-    
+
     if (pModel_) {
         // Gets the line pointed by the mouse
         unsigned int i = (y - getY()) / 12;
@@ -398,7 +398,7 @@ void ListBox::handleMouseDown(int x, int y, int button, const int modKeys) {
             // call the peer handleAction method giving the index of pressed line.
             std::pair<int, void *> tuple = std::make_pair(focusedLine_, pModel_->getElement(focusedLine_));
             getPeer()->handleAction(getId(), &tuple, modKeys);
-            
+
         }
     }
 }
@@ -455,7 +455,7 @@ void TeamListBox::draw() {
 }
 
 void TeamListBox::handleMouseMotion(int x, int y, int state, const int modKeys) {
-    
+
     if (pModel_) {
         // Gets the line pointed by the mouse
         int i = (y - yOrigin_) / 12;
@@ -491,7 +491,7 @@ void TeamListBox::setSquadLine(int squadSlot, unsigned int line) {
 std::string TextField::emptyLbl_ = "";
 
 TextField::TextField(Menu *peer, int x, int y, int width, int height, MenuFont *pFont,
-            int maxSize, bool displayEmpty, bool visible) 
+            int maxSize, bool displayEmpty, bool visible)
             : ActionWidget(peer, x, y, width, height, visible), text_(peer, x, y, width, "", pFont, false, visible, false) {
 
     // Position the button text in the middle of height
@@ -569,7 +569,7 @@ void TextField::handleBackSpace() {
             }
             i++;
         }
-            
+
         setText(tmp);
         caretPosition_--;
     }
@@ -601,7 +601,7 @@ void TextField::handleDelete() {
             }
             i++;
         }
-            
+
         setText(tmp);
     }
 }
@@ -634,7 +634,7 @@ void TextField::handleCharacter(Key key) {
         } else {
             itDst = utf8::append(key.unicode, itDst);
         }
-            
+
         while(i<nbCdpt) {
             int cp = utf8::next(itSrc, src + size);
             itDst = utf8::append(cp, itDst);
