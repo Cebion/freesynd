@@ -32,6 +32,7 @@
 #include "model/mod.h"
 #include "utils/seqmodel.h"
 #include "utils/portablefile.h"
+#include "version.h"
 
 /*!
  * Modifications manager class.

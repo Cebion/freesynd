@@ -30,6 +30,7 @@
 #include "model/weapon.h"
 #include "model/mod.h"
 #include "utils/portablefile.h"
+#include "version.h"
 
 /*!
  * Represents a research on a specific field.

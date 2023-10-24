@@ -31,9 +31,6 @@
 #include <cstring>
 #include <cassert>
 
-#include "utils/singleton.h"
-#include "version.h"
-
 // TODO: Add a configuration scheme to allow setting these during runtime
 #define MENU_SCREEN_WIDTH       320
 #define MENU_SCREEN_HEIGHT      200

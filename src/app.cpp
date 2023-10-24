@@ -51,7 +51,7 @@
 #include "sound/audio.h"
 #include "utils/file.h"
 #include "fs-utils/log/log.h"
-#include "utils/configfile.h"
+#include "fs-utils/io/configfile.h"
 #include "utils/portablefile.h"
 #include "agent.h"
 #include "menus/gamemenufactory.h"

@@ -29,7 +29,8 @@
 #define CORE_APPCONTEXT_H_
 
 #include "fs-utils/common.h"
-#include "utils/configfile.h"
+#include "fs-utils/misc/singleton.h"
+#include "fs-utils/io/configfile.h"
 
 /*!
  * This class stores application level parameters.

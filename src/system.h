@@ -27,6 +27,7 @@
 #define SYSTEM_H
 
 #include "fs-utils/common.h"
+#include "fs-utils/misc/singleton.h"
 #include "keys.h"
 
 class Sprite;

@@ -75,9 +75,9 @@ set (SOURCES
 	sound/soundmanager.cpp
 	sound/xmidi.cpp
 	system_sdl.cpp
-	utils/configfile.cpp
-	utils/ccrc32.cpp
-	utils/dernc.cpp
+#	utils/configfile.cpp
+#	utils/ccrc32.cpp
+#	utils/dernc.cpp
 	utils/file.cpp
 #	utils/log.cpp
 	utils/portablefile.cpp
@@ -174,14 +174,14 @@ set(HEADERS
 	sound/sound.h
 	sound/soundmanager.h
 	sound/xmidi.h
-	utils/configfile.h
-	utils/ccrc32.h
-	utils/dernc.h
+#	utils/configfile.h
+#	utils/ccrc32.h
+#	utils/dernc.h
 	utils/file.h
 #	utils/log.h
 	utils/portablefile.h
 	utils/seqmodel.h
-	utils/singleton.h
+#	utils/singleton.h
 	utils/timer.h
 	utils/utf8.h
 	utils/utf8/checked.h
@@ -272,12 +272,12 @@ if (BUILD_DEV_TOOLS)
 		ia/actions.cpp
 		ia/behaviour.cpp
 		mission.cpp
-		utils/dernc.cpp
+#		utils/dernc.cpp
 		utils/file.cpp
 #		utils/log.cpp
 		utils/portablefile.cpp
-		utils/configfile.cpp
-		utils/ccrc32.cpp
+#		utils/configfile.cpp
+#		utils/ccrc32.cpp
 		utils/seqmodel.cpp
 		editor/editorapp.cpp
 		editor/editormenufactory.cpp

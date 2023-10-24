@@ -30,7 +30,7 @@
 #include "menus/menumanager.h"
 #include "appcontext.h"
 #include "system.h"
-#include "utils/configfile.h"
+#include "fs-utils/io/configfile.h"
 #include "utils/file.h"
 #include "fs-utils/log/log.h"
 #include "gfx/fliplayer.h"

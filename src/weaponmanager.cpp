@@ -32,7 +32,7 @@
 #include "app.h"
 #include "fs-utils/log/log.h"
 #include "utils/file.h"
-#include "utils/configfile.h"
+#include "fs-utils/io/configfile.h"
 
 WeaponManager::WeaponManager() {
     all_game_weapons_.reserve(18);

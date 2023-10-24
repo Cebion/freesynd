@@ -32,7 +32,7 @@
 #include <vector>
 #include "mapobject.h"
 #include "sound/sound.h"
-#include "utils/configfile.h"
+#include "fs-utils/io/configfile.h"
 #include "utils/timer.h"
 
 class FlamerShot;

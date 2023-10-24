@@ -24,7 +24,7 @@
 #include "researchmanager.h"
 #include "fs-utils/log/log.h"
 #include "utils/file.h"
-#include "utils/configfile.h"
+#include "fs-utils/io/configfile.h"
 #include "core/gamecontroller.h"
 #include "appcontext.h"
 

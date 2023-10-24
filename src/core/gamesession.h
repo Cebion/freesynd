@@ -28,8 +28,10 @@
 #include <set>
 
 #include "fs-utils/common.h"
+#include "fs-utils/misc/singleton.h"
 #include "core/researchmanager.h"
 #include "utils/portablefile.h"
+#include "version.h"
 
 enum Status_Pop {
     STAT_VERY_HAPPY = 5,

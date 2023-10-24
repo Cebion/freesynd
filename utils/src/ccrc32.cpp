@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //  Copyright � NetworkDLS 2002, All rights reserved
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF 
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO 
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A 
+// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
+// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
 // PARTICULAR PURPOSE.
 //
 // Modified by Bohdan Stelmakh for use in Freesynd
@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ccrc32.h"
+#include "fs-utils/crc/ccrc32.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
@@ -92,7 +92,7 @@ unsigned int CCRC32::Reflect(unsigned int ulReflect, const char cChar)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
     Calculates the CRC32 by looping through each of the bytes in sData.
-    
+
     Note: For Example usage example, see FileCRC().
 */
 

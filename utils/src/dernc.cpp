@@ -22,7 +22,7 @@
  *                                                                      *
  ************************************************************************/
 
-#include "dernc.h"
+#include "fs-utils/crc/dernc.h"
 
 namespace RNC_INTERNAL {
     struct BitStream {

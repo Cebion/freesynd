@@ -41,10 +41,11 @@
 #endif
 
 #include "file.h"
-#include "ccrc32.h"
-#include "dernc.h"
+#include "fs-utils/crc/ccrc32.h"
+#include "fs-utils/crc/dernc.h"
 #include "fs-utils/log/log.h"
 #include "portablefile.h"
+#include "version.h"
 
 std::string File::dataPath_ = "./data/";
 std::string File::ourDataPath_ = "./data/";

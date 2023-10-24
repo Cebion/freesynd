@@ -31,7 +31,7 @@
 #include <cassert>
 #include <list>
 
-#include "utils/singleton.h"
+#include "fs-utils/misc/singleton.h"
 #include "core/gameevent.h"
 #include "agentmanager.h"
 #include "weaponmanager.h"

@@ -5,12 +5,17 @@
 set(HEADER_LIST
     "${Freesynd_SOURCE_DIR}/utils/include/fs-utils/common.h"
     "${Freesynd_SOURCE_DIR}/utils/include/fs-utils/log/log.h"
-
+    "${Freesynd_SOURCE_DIR}/utils/include/fs-utils/crc/ccrc32.h"
+    "${Freesynd_SOURCE_DIR}/utils/include/fs-utils/crc/dernc.h"
+    "${Freesynd_SOURCE_DIR}/utils/include/fs-utils/io/configfile.h"
+    "${Freesynd_SOURCE_DIR}/utils/include/fs-utils/misc/singleton.h"
     )
 
 set(SOURCE_LIST
     "${Freesynd_SOURCE_DIR}/utils/src/log.cpp"
-
+    "${Freesynd_SOURCE_DIR}/utils/src/configfile.cpp"
+    "${Freesynd_SOURCE_DIR}/utils/src/ccrc32.cpp"
+    "${Freesynd_SOURCE_DIR}/utils/src/dernc.cpp"
     )
 
 # Make an automatic library - will be static or dynamic based on user setting
