@@ -2,9 +2,9 @@
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
 # Generate the ini header, add it's location to the include directories.
-include (tools/embed.cmake)
-embed_data (../freesynd.ini embedded_default_ini default_ini.h)
-include_directories (${CMAKE_CURRENT_BINARY_DIR})
+#include (tools/embed.cmake)
+#embed_data (../freesynd.ini embedded_default_ini default_ini.h)
+#include_directories (${CMAKE_CURRENT_BINARY_DIR})
 
 set (SOURCES
 	appcontext.cpp
@@ -26,7 +26,7 @@ set (SOURCES
 	core/researchmanager.cpp
 	ia/actions.cpp
 	ia/behaviour.cpp
-	default_ini.h
+#	default_ini.h
 	freesynd.cpp
     ipastim.cpp
 	gfx/dirtylist.cpp

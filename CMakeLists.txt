@@ -1,6 +1,10 @@
-cmake_minimum_required (VERSION 2.6)
-project (FreeSynd)
-set (FREESYND_VERSION "0.8")
+cmake_minimum_required (VERSION 3.22)
+
+project(
+  Freesynd
+  VERSION 0.8
+  DESCRIPTION "FreeSynd is a cross-platform, GPLed reimplementation of the classic Bullfrog game, Syndicate."
+  LANGUAGES CXX)
 
 if (WIN32)
 	# Search the bundled libs directory when using MSVC.
@@ -89,5 +93,6 @@ endif ()
 include_directories (${PNG_INCLUDE_DIR} ${SDL_INCLUDE_DIR} ${SDLIMAGE_INCLUDE_DIR} ${SDLMIXER_INCLUDE_DIR})
 
 # Build the sources in this subdirectory.
+#add_subdirectory(utils)
 subdirs (src)
 
