@@ -26,7 +26,7 @@
 #ifndef AGENTMANAGER_H
 #define AGENTMANAGER_H
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "agent.h"
 #include "utils/seqmodel.h"
 #include "utils/portablefile.h"

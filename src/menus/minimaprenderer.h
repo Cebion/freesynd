@@ -25,7 +25,7 @@
 
 #include <map>
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "map.h"
 #include "pathsurfaces.h"
 #include "utils/timer.h"

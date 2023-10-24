@@ -31,7 +31,7 @@
 #include <vector>
 #include <fstream>
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "model/weaponholder.h"
 #include "modowner.h"
 #include "utils/portablefile.h"

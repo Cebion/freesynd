@@ -23,7 +23,7 @@
 
 #include "ped.h"
 #include "core/gamecontroller.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 
 /*!
  * Add the given action to the list of actions.

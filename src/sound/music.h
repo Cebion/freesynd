@@ -28,7 +28,7 @@
 #define MUSIC_H
 
 #include "config.h"
-#include "common.h"
+#include "fs-utils/common.h"
 
 namespace msc {
     enum MusicTrack {
@@ -58,7 +58,7 @@ namespace msc {
 class DefaultMusic {
   public:
     //! Play the music
-    /*! 
+    /*!
      * \param loops = -1 means play forever
      */
       void play(int loops = -1) const {;}

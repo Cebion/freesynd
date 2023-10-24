@@ -22,7 +22,7 @@
  ************************************************************************/
 
 #include "researchmanager.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 #include "utils/file.h"
 #include "utils/configfile.h"
 #include "core/gamecontroller.h"

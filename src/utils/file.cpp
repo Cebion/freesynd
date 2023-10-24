@@ -43,7 +43,7 @@
 #include "file.h"
 #include "ccrc32.h"
 #include "dernc.h"
-#include "log.h"
+#include "fs-utils/log/log.h"
 #include "portablefile.h"
 
 std::string File::dataPath_ = "./data/";

@@ -29,7 +29,7 @@
 #include <string>
 #include <vector>
 #include <stdio.h>
-#include "common.h"
+#include "fs-utils/common.h"
 
 /*!
  * File class gives a list of convenient methods to retrieve

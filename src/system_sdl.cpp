@@ -28,7 +28,7 @@
 #include "system.h"
 #include "sound/audio.h"
 #include "utils/file.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 
 #include <SDL_image.h>
 

@@ -24,7 +24,7 @@
  *                                                                      *
  ************************************************************************/
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "screen.h"
 #include "utils/file.h"
 

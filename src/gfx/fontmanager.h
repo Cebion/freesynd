@@ -27,7 +27,7 @@
 #ifndef FONTMANAGER_H
 #define FONTMANAGER_H
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "font.h"
 
 class SpriteManager;
@@ -51,7 +51,7 @@ public:
     //! Creates all fonts
     bool loadFonts(SpriteManager *pMenuSprites, SpriteManager *pIntroFontSprites_);
 
-    /*! 
+    /*!
      * Returns the font used in menus.
      * \param size Size of the font
      */

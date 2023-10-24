@@ -25,7 +25,7 @@
 #ifndef SCREEN_H
 #define SCREEN_H
 
-#include "common.h"
+#include "fs-utils/common.h"
 
 /*!
  * Screen class.

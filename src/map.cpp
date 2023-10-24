@@ -29,7 +29,7 @@
 #include <assert.h>
 
 #include "map.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 #include "gfx/tilemanager.h"
 #include "gfx/screen.h"
 

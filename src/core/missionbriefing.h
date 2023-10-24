@@ -25,7 +25,7 @@
 
 #include <string>
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "model/leveldata.h"
 
 #define MAX_INFOS   10
@@ -95,8 +95,8 @@ class MissionBriefing {
      * \param infoLvl Value of 0 is the default information.
      * \return empty string if level is greater than available infos.
      */
-    const char * briefing(uint8 infoLvl) { 
-        return infoLvl <= i_nb_infos_ ?a_briefing_[infoLvl].c_str() : ""; 
+    const char * briefing(uint8 infoLvl) {
+        return infoLvl <= i_nb_infos_ ?a_briefing_[infoLvl].c_str() : "";
     }
 
     //! Returns the minimap

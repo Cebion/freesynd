@@ -20,7 +20,7 @@
  *                                                                      *
  ************************************************************************/
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "dirtylist.h"
 
 DirtyList::DirtyList(int screenWidth, int screenHeight) {
@@ -96,7 +96,7 @@ void DirtyList::addRect(int x, int y, int width, int height) {
             } else {
                 pCurr = pCurr->pNext;
             }
-            
+
         } while(pCurr != NULL);
 
         Link *l = createLink(x, y, width, height);
@@ -120,7 +120,7 @@ DirtyRect * DirtyList::getRectAt(int pos) {
         }
         return &(l->element);
     }
-       
+
     return NULL;
 }
 
@@ -146,7 +146,7 @@ bool DirtyList::intersectsList(int x, int y, int width, int height)
     if (pHead_) {
         Link * l = pHead_;
         while (l) {
-            if ( !((x > l->element.x + l->element.width) || 
+            if ( !((x > l->element.x + l->element.width) ||
                     (x + width < l->element.x) ||
                     (y > l->element.y + l->element.height) ||
                     (y + height < l->element.y)) ) {
@@ -157,6 +157,6 @@ bool DirtyList::intersectsList(int x, int y, int width, int height)
             l = l->pNext;
         }
     }
-       
+
     return false;
 }

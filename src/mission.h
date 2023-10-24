@@ -31,7 +31,7 @@
 #include <vector>
 #include <set>
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "mapobject.h"
 #include "map.h"
 #include "model/leveldata.h"

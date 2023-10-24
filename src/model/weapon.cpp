@@ -30,7 +30,7 @@
 #include <assert.h>
 
 #include "app.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 #include "weapon.h"
 #include "ped.h"
 #include "mission.h"

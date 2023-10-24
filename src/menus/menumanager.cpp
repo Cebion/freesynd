@@ -32,12 +32,12 @@
 #include "system.h"
 #include "utils/configfile.h"
 #include "utils/file.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 #include "gfx/fliplayer.h"
 #include "gfx/screen.h"
 #include "sound/soundmanager.h"
 
-MenuManager::MenuManager(MenuFactory *pFactory, SoundManager *pGameSounds): 
+MenuManager::MenuManager(MenuFactory *pFactory, SoundManager *pGameSounds):
     dirtyList_(g_Screen.gameScreenWidth(), g_Screen.gameScreenHeight()),
     menuSprites_(), fonts_()
 {
@@ -48,7 +48,7 @@ MenuManager::MenuManager(MenuFactory *pFactory, SoundManager *pGameSounds):
     background_ = new uint8[g_Screen.gameScreenWidth() * g_Screen.gameScreenHeight()];
     memset(background_, 0, g_Screen.gameScreenHeight() * g_Screen.gameScreenWidth());
     needBackground_ = false;
-    
+
     current_ = NULL;
     nextMenuId_ = -1;
 
@@ -316,7 +316,7 @@ void MenuManager::saveBackground() {
 
 /*!
  * Blit a portion of the background to the current screen.
- * \param x Origin of the blit rect. 
+ * \param x Origin of the blit rect.
  * \param y Origin of the blit rect.
  * \param width Width of the blit rect.
  * \param height Height of the blit rect.
@@ -326,7 +326,7 @@ void MenuManager::blitFromBackground(int x, int y, int width, int height) {
 }
 
 /*!
- * Renders the current menu if there is one 
+ * Renders the current menu if there is one
  * and if it needs to be refreshed.
  */
 void MenuManager::renderMenu() {

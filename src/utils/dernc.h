@@ -25,7 +25,7 @@
 #ifndef DERNC_H
 #define DERNC_H
 
-#include "common.h"
+#include "fs-utils/common.h"
 
 #define RNC_SIGNATURE   0x524E4301      // "RNC\001"
 

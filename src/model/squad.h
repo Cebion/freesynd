@@ -23,7 +23,7 @@
 #ifndef CORE_SQUAD_H_
 #define CORE_SQUAD_H_
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "model/position.h"
 
 class PedInstance;

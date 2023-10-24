@@ -25,9 +25,9 @@
 #ifndef KEYS_H
 #define KEYS_H
 
-#include "common.h"
+#include "fs-utils/common.h"
 
-/*! 
+/*!
  * All available key codes.
  */
 enum KeyFunc {
@@ -78,7 +78,7 @@ const int KMD_CTRL = KMD_LCTRL | KMD_RCTRL;
 const int KMD_SHIFT = KMD_LSHIFT | KMD_RSHIFT;
 const int KMD_ALT = KMD_LALT | KMD_RALT;
 
-/*! 
+/*!
  * Virtual key represents the physical key on a keyboard.
  */
 enum KeyVirtual {
@@ -93,10 +93,10 @@ enum KeyVirtual {
     KVT_NUMPAD7 = 8,
     KVT_NUMPAD8 = 9,
     KVT_NUMPAD9 = 10
-    
+
 };
 
-/*! 
+/*!
  * All available key codes.
  */
 typedef struct Key {

@@ -31,7 +31,7 @@
 #include <map>
 #include <set>
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "mapobject.h"
 #include "modowner.h"
 #include "gfx/spritemanager.h"

@@ -26,7 +26,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include "common.h"
+#include "fs-utils/common.h"
 
 /*!
  * Portable file class.  Simplifies implementation of portable file formats.

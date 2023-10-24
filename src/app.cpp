@@ -50,7 +50,7 @@
 #include "gfx/screen.h"
 #include "sound/audio.h"
 #include "utils/file.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 #include "utils/configfile.h"
 #include "utils/portablefile.h"
 #include "agent.h"

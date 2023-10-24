@@ -27,7 +27,7 @@
 #ifndef MUSICMANAGER_H
 #define MUSICMANAGER_H
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "music.h"
 
 #include <vector>
@@ -54,7 +54,7 @@ protected:
     std::vector<Music *> tracks_;
     msc::MusicTrack current_track_;
     bool is_playing_;
-    /*! 
+    /*!
      * Saves the volume level before a mute so
      * we can restore it after a unmute.
      */

@@ -38,10 +38,10 @@
 #include <sys/types.h>
 #endif
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "app.h"
 #include "utils/file.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 
 #ifdef SYSTEM_SDL
 #ifdef _WIN32

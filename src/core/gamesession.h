@@ -27,7 +27,7 @@
 #include <string>
 #include <set>
 
-#include "../common.h"
+#include "fs-utils/common.h"
 #include "core/researchmanager.h"
 #include "utils/portablefile.h"
 

@@ -26,7 +26,7 @@
 #include <assert.h>
 #include "mapmanager.h"
 #include "utils/file.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 
 MapManager::MapManager()
 {
@@ -65,7 +65,7 @@ Map * MapManager::loadMap(uint16 i_mapNum)
         LOG(Log::k_FLG_IO, "MapManager", "loadMap()", ("Map is already in cache"));
         return maps_[i_mapNum];
     }
-    
+
     // Not found so construct new one
     LOG(Log::k_FLG_IO, "MapManager", "loadMap()", ("Load new map"));
     sprintf(tmp, "map%02d.dat", i_mapNum);

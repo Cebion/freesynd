@@ -26,11 +26,11 @@
 #ifndef MENUS_GAMEMENUFACTORY_
 #define MENUS_GAMEMENUFACTORY_
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "menumanager.h"
 
 /*!
- * 
+ *
  */
 class GameMenuFactory : public MenuFactory {
 public:

@@ -28,7 +28,7 @@
 #include "config.h"
 #include "audio.h"
 #include "utils/file.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 
 SoundManager::SoundManager(bool disabled):tabentry_startoffset_(58), tabentry_offset_(32), disabled_(disabled)
 {
@@ -105,7 +105,7 @@ bool SoundManager::loadSounds(uint8 * tabData, int tabSize,
     if (!tabData || !soundData) {
         return false;
     }
-    
+
     tabData += tabentry_startoffset_;
     uint32 offset = 0;
 

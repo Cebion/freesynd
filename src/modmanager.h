@@ -28,7 +28,7 @@
 
 #include <fstream>
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "model/mod.h"
 #include "utils/seqmodel.h"
 #include "utils/portablefile.h"

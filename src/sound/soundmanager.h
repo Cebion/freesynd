@@ -27,7 +27,7 @@
 #ifndef SOUNDMANAGER_H
 #define SOUNDMANAGER_H
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "sound.h"
 
 #include <vector>
@@ -66,7 +66,7 @@ protected:
     const int tabentry_startoffset_;
     const int tabentry_offset_;
     std::vector<Sound *> sounds_;
-    /*! 
+    /*!
      * Saves the volume level before a mute so
      * we can restore it after a unmute.
      */

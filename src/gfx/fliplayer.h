@@ -25,7 +25,7 @@
 #ifndef FLIPLAYER_H
 #define FLIPLAYER_H
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "system.h"
 
 typedef struct FliHeader {

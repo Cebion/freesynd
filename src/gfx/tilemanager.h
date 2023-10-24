@@ -25,7 +25,7 @@
 #ifndef TILEMANAGER_H
 #define TILEMANAGER_H
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "tile.h"
 
 /*!

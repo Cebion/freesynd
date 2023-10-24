@@ -27,11 +27,11 @@
 #ifndef SOUND_H
 #define SOUND_H
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "config.h"
 
 namespace snd {
-    /*! 
+    /*!
      * These enum values match the indices in the vector containing the samples
      * so don't mess up the order in which they are in.
      */

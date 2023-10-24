@@ -25,7 +25,7 @@
 #ifndef XMIDI_H
 #define XMIDI_H
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include <vector>
 
 /*!

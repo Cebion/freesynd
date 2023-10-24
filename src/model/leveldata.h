@@ -28,7 +28,7 @@
 #ifndef MODEL_LEVELDATA_H_
 #define MODEL_LEVELDATA_H_
 
-#include "common.h"
+#include "fs-utils/common.h"
 
 /*!
  * This namespace holds structures that represent a game file (GAMEXX.DAT).
@@ -40,7 +40,7 @@ namespace LevelData {
      */
     struct Unkn01 {
         uint8 unkn10[6];
-    };  
+    };
 
     /*!
      * The objs field is an array that represent the tiles of the map
@@ -51,12 +51,12 @@ namespace LevelData {
      * Was not able to verify correctness
      * total: 32768 bytes
      */
-    struct Map {// 
+    struct Map {//
         //! 128*128 offsets size 2 bytes(LE)
         uint8 objs[32768];
     };
 
-    /*! 
+    /*!
      * This structure contains all people in the game, including agents
      * This struct size is 92.
      * most 2 byte variable have little-endianess byte order(LE)
@@ -282,7 +282,7 @@ namespace LevelData {
          * Gives the type of scenario. Values are:
          * 0x00 - unset scenario type, is found at start of array and end;
          * 0x01 - walking/driving to pos, x,y defined, no object offset;
-         * 0x02 - vehicle to use and goto 
+         * 0x02 - vehicle to use and goto
          * 0x03 - ?(south africa)
          * 0x05 - ?(kenya)
          * 0x06 - (kenya) - ped offset when in vehicle, and? (TODO)
@@ -385,7 +385,7 @@ namespace LevelData {
     static const int kScenarioTypeUseVehicle = 0x02;
     /*! Constant for field Scenario::type :  Target has escape the map.*/
     static const int kScenarioTypeEscape = 0x07;
-    /*! Constant for field Scenario::type : this is a trigger. 
+    /*! Constant for field Scenario::type : this is a trigger.
      * Agents will trigger it when they enter the circle defined by the center and a fixed radius.*/
     static const int kScenarioTypeTrigger = 0x08;
     /*! Constant for field Scenario::type : Reset all scripted action.*/

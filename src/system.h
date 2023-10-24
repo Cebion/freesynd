@@ -26,7 +26,7 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "keys.h"
 
 class Sprite;
@@ -68,14 +68,14 @@ struct FS_KeyEvent {
 /** General event structure */
 union FS_Event {
     FS_EventType type;
-    
+
     FS_QuitEvent quit;
     FS_MouseMotionEvent motion;
     FS_MouseButtonEvent button;
     FS_KeyEvent key;
 };
 
-/*! 
+/*!
  * Abstract interface that all systems/ports should implement.
  */
 struct System : public Singleton<System> {

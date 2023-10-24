@@ -27,7 +27,7 @@
 #define MAPMANAGER_H
 
 #include <map>
-#include "common.h"
+#include "fs-utils/common.h"
 #include "map.h"
 #include "gfx/tilemanager.h"
 

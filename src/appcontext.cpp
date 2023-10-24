@@ -25,7 +25,7 @@
 
 #include "appcontext.h"
 #include "utils/file.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 
 AppContext::AppContext() {
     time_for_click_ = 80;

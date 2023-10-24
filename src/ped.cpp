@@ -25,9 +25,9 @@
  *                                                                      *
  ************************************************************************/
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "app.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 #include "model/vehicle.h"
 #include "model/squad.h"
 #include "model/shot.h"

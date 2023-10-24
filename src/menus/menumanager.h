@@ -27,7 +27,7 @@
 #ifndef MENUMANAGER_H
 #define MENUMANAGER_H
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "menu.h"
 #include "gfx/dirtylist.h"
 #include <string>

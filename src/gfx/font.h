@@ -26,7 +26,7 @@
 #ifndef FONT_H
 #define FONT_H
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "spritemanager.h"
 #include <map>
 
@@ -76,7 +76,7 @@ protected:
     FontRange range_;
 };
 
-/*! 
+/*!
  * Font used in menu and widget. Text can be highlighted or dark.
  * Text can be in UTF-8 or Cp437.
  */
@@ -106,7 +106,7 @@ protected:
     int lightOffset_;
 };
 
-/*! 
+/*!
  * GameFont is the font used during gameplay (for displaying hints).
  * It uses the same sprites as the menu fonts but only in size 3 and it
  * changes its color to a specified color.

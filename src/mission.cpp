@@ -34,7 +34,7 @@
 #include "gfx/screen.h"
 #include "app.h"
 #include "model/objectivedesc.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 #include "model/vehicle.h"
 #include "model/squad.h"
 #include "model/shot.h"

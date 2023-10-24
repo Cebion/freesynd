@@ -27,7 +27,7 @@
 
 #include "tilemanager.h"
 #include "resources.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 #include "utils/file.h"
 
 /*!
@@ -54,7 +54,7 @@ void unpackBlocks4(const uint8 * data, uint8 * pixels)
     }
 }
 
-/*! 
+/*!
  *
  */
 void loadSubTile(const uint8 * data, uint32 offset, uint32 index,
@@ -196,7 +196,7 @@ bool TileManager::loadTiles()
 
     // then reads tiles
     uint8 *tileData = File::loadOriginalFile(TILE_SET, size);
-  
+
     if (!tileData) {
         FSERR(Log::k_FLG_IO, "TileManager", "loadTiles", ("Failed to load tiles data\n"));
         delete[] type_data;

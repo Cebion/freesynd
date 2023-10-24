@@ -28,7 +28,7 @@
 #ifndef CORE_APPCONTEXT_H_
 #define CORE_APPCONTEXT_H_
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "utils/configfile.h"
 
 /*!

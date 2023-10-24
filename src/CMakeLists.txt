@@ -79,7 +79,7 @@ set (SOURCES
 	utils/ccrc32.cpp
 	utils/dernc.cpp
 	utils/file.cpp
-	utils/log.cpp
+#	utils/log.cpp
 	utils/portablefile.cpp
 	utils/seqmodel.cpp
 	weaponmanager.cpp
@@ -96,7 +96,7 @@ set(HEADERS
 	agent.h
 	agentmanager.h
 	app.h
-	common.h
+#	common.h
 	config.h
 	cp437.h
     ipastim.h
@@ -178,7 +178,7 @@ set(HEADERS
 	utils/ccrc32.h
 	utils/dernc.h
 	utils/file.h
-	utils/log.h
+#	utils/log.h
 	utils/portablefile.h
 	utils/seqmodel.h
 	utils/singleton.h
@@ -201,7 +201,7 @@ source_group(IA REGULAR_EXPRESSION ia/*)
 
 add_executable (freesynd ${SOURCES} ${HEADERS})
 
-target_link_libraries (freesynd ${PNG_LIBRARIES} ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY})
+target_link_libraries (freesynd PRIVATE ${PNG_LIBRARIES} ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} fs_utils)
 
 # Use -DBIN_DIR to override binary installation location
 if(NOT BIN_DIR)
@@ -274,7 +274,7 @@ if (BUILD_DEV_TOOLS)
 		mission.cpp
 		utils/dernc.cpp
 		utils/file.cpp
-		utils/log.cpp
+#		utils/log.cpp
 		utils/portablefile.cpp
 		utils/configfile.cpp
 		utils/ccrc32.cpp

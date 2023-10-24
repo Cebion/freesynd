@@ -25,8 +25,8 @@
  *                                                                      *
  ************************************************************************/
 
-#include "common.h"
-#include "utils/log.h"
+#include "fs-utils/common.h"
+#include "fs-utils/log/log.h"
 #include "app.h"
 #include "model/vehicle.h"
 #include "core/gamesession.h"

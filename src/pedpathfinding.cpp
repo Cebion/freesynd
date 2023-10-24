@@ -24,12 +24,12 @@
  *                                                                      *
  ************************************************************************/
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "mission.h"
 #include "ped.h"
 #include "pathsurfaces.h"
 #include "gfx/tile.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 
 #if 0
 #include "SDL.h"

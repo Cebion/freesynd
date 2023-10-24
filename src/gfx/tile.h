@@ -25,7 +25,7 @@
 #ifndef TILE_H
 #define TILE_H
 
-#include "common.h"
+#include "fs-utils/common.h"
 
 // TODO: Convert these to const int's -- we are using C++, yes? :-)
 #define TILE_WIDTH              64

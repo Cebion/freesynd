@@ -26,7 +26,7 @@
 #ifndef SPRITE_H
 #define SPRITE_H
 
-#include "common.h"
+#include "fs-utils/common.h"
 
 const int TABENTRY_SIZE = 6;
 

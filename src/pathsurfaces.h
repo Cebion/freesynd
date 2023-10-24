@@ -23,7 +23,7 @@
 #ifndef PATHSURFACES_H
 #define PATHSURFACES_H
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "model/position.h"
 
 

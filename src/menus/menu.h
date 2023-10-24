@@ -30,7 +30,7 @@
 #include <list>
 #include <map>
 #include "keys.h"
-#include "common.h"
+#include "fs-utils/common.h"
 #include "menus/widget.h"
 #include "gfx/dirtylist.h"
 
@@ -54,7 +54,7 @@ public:
     /*!
         * Menu constructor.
         */
-    Menu(MenuManager *menuManager, int id, int parentId, 
+    Menu(MenuManager *menuManager, int id, int parentId,
         const char *showAnim = "", const char *leaveAnim = "");
     virtual ~Menu();
 
@@ -73,7 +73,7 @@ public:
 
     //! Returns the sprites used in menus
     SpriteManager &menuSprites();
-    
+
     //! Creates a new text label and returns its id
     int addStatic(int x, int y, const char *text, FontManager::EFontSize size, bool highlighted);
     //! Creates a new text label with a fixed size and returns its id
@@ -107,17 +107,17 @@ public:
     void leave();
 
     //! Callback function : Childs can reimplement
-    /*! 
+    /*!
      * Called just after the opening animation is played (if one has
      * been defined) and before the menu is rendered for the first time.
      */
     virtual void handleShow() {}
-    
+
     //! Main render function
     void render(DirtyList &dirtyList);
 
     //! Callback function : Childs can reimplement
-    /*! 
+    /*!
      * Called just before the closing animation is played (if one has
      * been defined) and the menu closed.
      */
@@ -135,7 +135,7 @@ public:
     virtual void handleTick(int elapsed) {}
 
     //! Callback function : Childs can reimplement
-    /*! 
+    /*!
      * Called when an action widget has been activated.
      * \param actionId The id of the actionWidget that was activated.
      * \param ctx A pointer to a context specific to the action
@@ -154,7 +154,7 @@ public:
 protected:
 
     //! Callback function : Childs can reimplement
-    /*! 
+    /*!
         * Called each time a menu is rendered.
         */
     virtual void handleRender(DirtyList &dirtyList) {}
@@ -188,7 +188,7 @@ protected:
             pOption = pOpt;
         }
         Key key;
-        Option *pOption; 
+        Option *pOption;
     };
 
     MenuManager *menu_manager_;

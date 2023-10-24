@@ -37,7 +37,7 @@
 #include "menus/debriefmenu.h"
 #include "menus/logoutmenu.h"
 #include "menus/flimenu.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 
 Menu * GameMenuFactory::createMenu(const int menuId) {
     Menu *pMenu = NULL;
@@ -65,8 +65,8 @@ Menu * GameMenuFactory::createMenu(const int menuId) {
     } else if (menuId == fs_game_menus::kMenuIdMap) {
         pMenu =  new MapMenu(pManager_);
     } else if (menuId == fs_game_menus::kMenuIdFliSuccess ||
-        menuId == fs_game_menus::kMenuIdFliFailedMission || 
-        menuId == fs_game_menus::kMenuIdFliTitle|| 
+        menuId == fs_game_menus::kMenuIdFliFailedMission ||
+        menuId == fs_game_menus::kMenuIdFliTitle||
         menuId == fs_game_menus::kMenuIdFliIntro) {
         pMenu =  new FliMenu(pManager_, menuId);
     } else {

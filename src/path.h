@@ -27,7 +27,7 @@
 #ifndef PATH_H
 #define PATH_H
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "pathsurfaces.h"
 
 /*!

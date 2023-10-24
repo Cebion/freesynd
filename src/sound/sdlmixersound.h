@@ -23,7 +23,7 @@
 #ifndef SDLMIXERSOUND_H_
 #define SDLMIXERSOUND_H_
 
-#include "../common.h"
+#include "fs-utils/common.h"
 
 #ifdef HAVE_SDL_MIXER
 
@@ -36,9 +36,9 @@
  */
 class SdlMixerSound {
 public:
-    //! Class constructor 
+    //! Class constructor
     SdlMixerSound();
-    //! Class destructor 
+    //! Class destructor
     ~SdlMixerSound();
 
     //! Plays the sound a number a time

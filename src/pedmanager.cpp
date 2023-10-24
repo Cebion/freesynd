@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 #include "pedmanager.h"
 #include "core/gamecontroller.h"
 

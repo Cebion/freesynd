@@ -33,8 +33,8 @@
 #include <set>
 #include <map>
 
-#include "common.h"
-#include "utils/log.h"
+#include "fs-utils/common.h"
+#include "fs-utils/log/log.h"
 #include "model/position.h"
 
 class Mission;

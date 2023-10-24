@@ -29,7 +29,7 @@
 #include "musicmanager.h"
 #include "xmidi.h"
 #include "utils/file.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 
 MusicManager::MusicManager(bool disabled):is_playing_(false), disabled_(disabled)
 {

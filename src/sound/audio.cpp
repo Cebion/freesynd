@@ -26,7 +26,7 @@
 
 #include "config.h"
 #include "audio.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 
 #include <iostream>
 
@@ -144,7 +144,7 @@ void Audio::setMusicVolume(int volume)
         Mix_VolumeMusic(volume);
     }
 }
- 
+
 /*!
  * Returns the music volume.
  * \return -1 if the system has not been initialized.
@@ -171,7 +171,7 @@ void Audio::setSoundVolume(int volume, int channel)
         Mix_Volume(channel, volume);
     }
 }
- 
+
 /*!
  * Returns the music volume.
  * \return -1 if the system has not been initialized.
@@ -235,7 +235,7 @@ int Audio::getMusicVolume() {
 void Audio::setSoundVolume(int volume, int channel)
 {
 }
- 
+
 /*!
  * Returns the music volume.
  * \return -1 if the system has not been initialized.

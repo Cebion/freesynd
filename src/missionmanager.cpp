@@ -28,7 +28,7 @@
 #include "missionmanager.h"
 #include "app.h"
 #include "utils/file.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 #include "resources.h"
 #include "core/gamecontroller.h"
 #include "core/missionbriefing.h"

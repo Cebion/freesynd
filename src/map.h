@@ -25,7 +25,7 @@
 #ifndef MAP_H
 #define MAP_H
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "model/position.h"
 
 class Tile;
