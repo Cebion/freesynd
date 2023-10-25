@@ -94,5 +94,6 @@ include_directories (${PNG_INCLUDE_DIR} ${SDL_INCLUDE_DIR} ${SDLIMAGE_INCLUDE_DI
 
 # Build the sources in this subdirectory.
 add_subdirectory(utils)
+add_subdirectory(engine)
 subdirs (src)
 

@@ -32,7 +32,7 @@
 #include "keys.h"
 #include "fs-utils/common.h"
 #include "menus/widget.h"
-#include "gfx/dirtylist.h"
+#include "fs-engine/gfx/dirtylist.h"
 
 class FontManager;
 class Menu;

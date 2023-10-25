@@ -25,7 +25,7 @@
 
 #include "editor/editormenufactory.h"
 #include "editor/editormenuid.h"
-#include "utils/log.h"
+#include "fs-utils/log/log.h"
 #include "editor/mainmenu.h"
 #include "editor/logoutmenu.h"
 #include "editor/fontmenu.h"

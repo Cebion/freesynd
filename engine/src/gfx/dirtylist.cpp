@@ -21,7 +21,7 @@
  ************************************************************************/
 
 #include "fs-utils/common.h"
-#include "dirtylist.h"
+#include "fs-engine/gfx/dirtylist.h"
 
 DirtyList::DirtyList(int screenWidth, int screenHeight) {
     size_ = 0;

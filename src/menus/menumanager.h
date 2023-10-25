@@ -27,11 +27,12 @@
 #ifndef MENUMANAGER_H
 #define MENUMANAGER_H
 
-#include "fs-utils/common.h"
-#include "menu.h"
-#include "gfx/dirtylist.h"
 #include <string>
 #include <map>
+
+#include "fs-utils/common.h"
+#include "menu.h"
+#include "fs-engine/gfx/dirtylist.h"
 
 class SpriteManager;
 class ConfigFile;

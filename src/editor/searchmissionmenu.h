@@ -26,7 +26,7 @@
  *                                                                      *
  ************************************************************************/
 
-#include "utils/seqmodel.h"
+#include "fs-utils/misc/seqmodel.h"
 #include "ped.h"
 
 class Mission;

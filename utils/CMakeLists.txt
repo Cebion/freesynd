@@ -32,6 +32,7 @@ set(SOURCE_LIST
 
 # Make an automatic library - will be static or dynamic based on user setting
 add_library(fs_utils ${SOURCE_LIST} ${HEADER_LIST})
+add_library(Freesynd::Utils ALIAS fs_utils)
 
 # We need this directory, and users of our library will need it too
 target_include_directories(fs_utils PUBLIC include)

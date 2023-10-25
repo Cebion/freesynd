@@ -26,7 +26,7 @@
 #ifndef EDITOR_EDITORMENUFACTORY_H_
 #define EDITOR_EDITORMENUFACTORY_H_
 
-#include "common.h"
+#include "fs-utils/common.h"
 #include "menus/menumanager.h"
 
 /*!

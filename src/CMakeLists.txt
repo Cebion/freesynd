@@ -29,7 +29,7 @@ set (SOURCES
 #	default_ini.h
 	freesynd.cpp
     ipastim.cpp
-	gfx/dirtylist.cpp
+#	gfx/dirtylist.cpp
 	gfx/fliplayer.cpp
 	gfx/font.cpp
 	gfx/fontmanager.cpp
@@ -124,7 +124,7 @@ set(HEADERS
 	core/researchmanager.h
 	ia/actions.h
 	ia/behaviour.h
-	gfx/dirtylist.h
+#	gfx/dirtylist.h
 	gfx/fliplayer.h
 	gfx/font.h
 	gfx/fontmanager.h
@@ -202,7 +202,7 @@ source_group(IA REGULAR_EXPRESSION ia/*)
 
 add_executable (freesynd ${SOURCES} ${HEADERS})
 
-target_link_libraries (freesynd PRIVATE ${PNG_LIBRARIES} ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} fs_utils)
+target_link_libraries (freesynd PRIVATE ${PNG_LIBRARIES} ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} Freesynd::Utils Freesynd::Engine)
 
 # Use -DBIN_DIR to override binary installation location
 if(NOT BIN_DIR)
@@ -225,7 +225,7 @@ if (BUILD_DEV_TOOLS)
 
 	add_executable (dump
 		dump.cpp
-		gfx/dirtylist.cpp
+	#	gfx/dirtylist.cpp
 		gfx/fliplayer.cpp
 		gfx/font.cpp
 		gfx/fontmanager.cpp
@@ -291,7 +291,7 @@ if (BUILD_DEV_TOOLS)
 		system_sdl.cpp
 		${DEV_TOOLS_HEADERS}
 	)
-	target_link_libraries (dump ${PNG_LIBRARIES} ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY})
+	target_link_libraries (dump PRIVATE ${PNG_LIBRARIES} ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} Freesynd::Utils Freesynd::Engine)
 
 	target_compile_definitions (dump PRIVATE EDITOR_)
 else ()
