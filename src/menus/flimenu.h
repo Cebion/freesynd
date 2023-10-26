@@ -25,8 +25,8 @@
 
 #include "menus/menumanager.h"
 #include "gfx/fliplayer.h"
-#include "sound/sound.h"
-#include "sound/music.h"
+#include "fs-engine/sound/sound.h"
+#include "fs-engine/sound/music.h"
 
 struct FrameEvent {
     /*! frame Id.*/
@@ -48,7 +48,7 @@ struct FliDesc {
     std::string name;
     /*! Speed of animation : delay between 2 frames.*/
     uint8 frameDelay;
-    /*! True means user has to press key or mouse to go to 
+    /*! True means user has to press key or mouse to go to
      * next animation or next menu after the end of animation.*/
     bool waitKeyPressed;
     /*! True means animation can be skipped by pressing key or mouse.*/
@@ -66,9 +66,9 @@ public:
 
     void handleTick(int elapsed);
     void handleShow();
-    
+
     void handleLeave();
-    
+
 protected:
     void handleRender(DirtyList &dirtyList);
 

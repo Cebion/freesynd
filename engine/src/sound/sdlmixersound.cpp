@@ -23,12 +23,12 @@
  *                                                                      *
  ************************************************************************/
 
-#include "config.h"
-#include "audio.h"
+#include "fs-engine/config.h"
+#include "fs-engine/sound/audio.h"
 
 #ifdef HAVE_SDL_MIXER
 
-#include "sdlmixersound.h"
+#include "fs-engine/sound/sdlmixersound.h"
 
 /*!
  * Class constructor. Initialize date with NULL.
@@ -38,7 +38,7 @@ SdlMixerSound::SdlMixerSound():sound_data_(NULL)
 }
 
 /*!
- * Class destructor. free the sound data if it 
+ * Class destructor. free the sound data if it
  * was allocated.
  */
 SdlMixerSound::~SdlMixerSound()

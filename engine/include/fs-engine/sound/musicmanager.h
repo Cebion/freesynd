@@ -24,75 +24,42 @@
  *                                                                      *
  ************************************************************************/
 
-#ifndef MUSIC_H
-#define MUSIC_H
+#ifndef MUSICMANAGER_H
+#define MUSICMANAGER_H
 
-#include "config.h"
 #include "fs-utils/common.h"
+#include "fs-engine/sound/music.h"
 
-namespace msc {
-    enum MusicTrack {
-        TRACK_INTRO,
-        TRACK_ASSASSINATE,
-        TRACK_DANGER,
-        TRACK_GAME_COMPLETED,
-        TRACK_MISSION_FAILED,
-        TRACK_MISSION_COMPLETED,
-        NO_TRACK = -1
-    };
-};
-
-#ifdef HAVE_SDL_MIXER
-
-// Load the SDL_Mixer implementation
-#include "sdlmixermusic.h"
-
-// This macro is used to hide the implementation class
-#define Music SdlMixerMusic
-
-#else
+#include <vector>
 
 /*!
- * Dummy implementation of music.
+ * Music manager class.
  */
-class DefaultMusic {
-  public:
-    //! Play the music
+class MusicManager {
+public:
+    MusicManager(bool disabled);
+    ~MusicManager();
+
+    void loadMusic();
+    void playTrack(msc::MusicTrack track, int loops = -1);
+    void stopPlayback();
+    //! Sets the music volume to the given level
+    void setVolume(int volume);
+    //! Returns the current volume
+    int getVolume();
+    //! Mute / unmute the music
+    void toggleMusic();
+
+protected:
+    std::vector<Music *> tracks_;
+    msc::MusicTrack current_track_;
+    bool is_playing_;
     /*!
-     * \param loops = -1 means play forever
+     * Saves the volume level before a mute so
+     * we can restore it after a unmute.
      */
-      void play(int loops = -1) const {;}
-      //! Plays the music with a fade in.
-    /*!
-     * \param loops
-     * \param ms
-     */
-      void playFadeIn(int loops = -1, int ms = 200) const {;}
-      //! Stops the music
-    /*!
-     *
-     */
-      void stop() const {;}
-      //! Stops the music with a fade out.
-    /*!
-     * \param ms
-     */
-      void stopFadeOut(int ms = 200) const {;}
-      //! Loads the music from the given data.
-    /*!
-     * \param musicData
-     * \param size
-     */
-      bool loadMusic(uint8 *musicData, int size) { return true; }
-      //! Loads the music from the given file.
-    /*!
-     * \param fname
-     */
-      bool loadMusicFile(const char *fname) { return true;}
+    int volumeBeforeMute_;
+    bool disabled_;
 };
 
-#define Music DefaultMusic
-
-#endif  // HAVE_SDL_MIXER
-
-#endif  // MUSIC_H
+#endif

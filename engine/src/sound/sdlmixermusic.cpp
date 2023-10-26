@@ -24,13 +24,13 @@
  *                                                                      *
  ************************************************************************/
 
-#include "config.h"
-#include "audio.h"
+#include "fs-engine/config.h"
+#include "fs-engine/sound/audio.h"
 
 #ifdef HAVE_SDL_MIXER
 
 #include "fs-utils/io/file.h"
-#include "sdlmixermusic.h"
+#include "fs-engine/sound/sdlmixermusic.h"
 
 #include <SDL.h>
 #include <SDL_mixer.h>

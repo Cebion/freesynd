@@ -35,7 +35,7 @@
 #include "fs-utils/log/log.h"
 #include "gfx/fliplayer.h"
 #include "fs-engine/gfx/screen.h"
-#include "sound/soundmanager.h"
+#include "fs-engine/sound/soundmanager.h"
 
 MenuManager::MenuManager(MenuFactory *pFactory, SoundManager *pGameSounds):
     dirtyList_(g_Screen.gameScreenWidth(), g_Screen.gameScreenHeight()),

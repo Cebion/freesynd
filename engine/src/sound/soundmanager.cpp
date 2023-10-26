@@ -24,9 +24,9 @@
  *                                                                      *
  ************************************************************************/
 
-#include "soundmanager.h"
-#include "config.h"
-#include "audio.h"
+#include "fs-engine/sound/soundmanager.h"
+#include "fs-engine/config.h"
+#include "fs-engine/sound/audio.h"
 #include "fs-utils/io/file.h"
 #include "fs-utils/log/log.h"
 

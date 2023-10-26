@@ -24,17 +24,17 @@
  *                                                                      *
  ************************************************************************/
 
-#include "config.h"
-#include "audio.h"
-#include "fs-utils/log/log.h"
+#include "fs-engine/sound/audio.h"
 
 #include <iostream>
-
 #include <SDL.h>
+
+#include "fs-engine/config.h"
+#include "fs-utils/log/log.h"
 
 #ifdef HAVE_SDL_MIXER
 
-#include "sdlmixersound.h"
+#include "fs-engine/sound/sdlmixersound.h"
 
 /*!
  * Initialize the audio system using SDL_Mixer.

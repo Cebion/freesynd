@@ -24,7 +24,7 @@
  *                                                                      *
  ************************************************************************/
 
-#include "xmidi.h"
+#include "fs-engine/sound/xmidi.h"
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
@@ -178,13 +178,13 @@ void XMidi::createNewEvent (XMidiFile *xmidi, int time)
         if (xmidi->current->next->time > time)
         {
             midi_event *event = allocateEvent(time);
-            
+
             event->next = xmidi->current->next;
             xmidi->current->next = event;
             xmidi->current = event;
             return;
         }
-        
+
         xmidi->current = xmidi->current->next;
     }
 
@@ -260,7 +260,7 @@ int XMidi::putVLQ(unsigned char *stream, uint32 value)
         else
             break;
     }
-    
+
     return i;
 }
 
@@ -300,7 +300,7 @@ int XMidi::convertEvent (XMidiFile *xmidi, const int time, const unsigned char s
     xmidi->current->status = status;
     xmidi->current->data[0] = stream[0];
     xmidi->current->data[1] = 0;
-    
+
     /* Change the xmidi->current to the prev */
     xmidi->current = prev;
 
@@ -335,7 +335,7 @@ int XMidi::convertSystemMessage (XMidiFile *xmidi, const int time, const unsigne
 
 /*
 // XMidiFile to List
-// Returns PPQN 
+// Returns PPQN
 */
 int XMidi::readEventList (XMidiFile *xmidi, const unsigned char *stream)
 {
@@ -580,7 +580,7 @@ uint32 XMidi::convertListToMTrk (unsigned char *buf, const midi_event *mlist)
             if (buf) buf[i] = event->data[0];
             i++;
             break;
-            
+
 
             /* Variable length */
             /* SysEx */
@@ -590,21 +590,21 @@ uint32 XMidi::convertListToMTrk (unsigned char *buf, const midi_event *mlist)
                 if (buf) buf[i] = event->data[0];
                 i++;
             }
-    
+
             if (buf) i += putVLQ (buf+i, event->len);
             else i += putVLQ (NULL, event->len);
-            
+
             if (event->len)
             {
                 for (j = 0; j < event->len; j++)
                 {
-                    if (buf) buf[i] = event->stream[j]; 
+                    if (buf) buf[i] = event->stream[j];
                     i++;
                 }
             }
 
             break;
-            
+
 
             /* Never occur */
             default:
@@ -782,7 +782,7 @@ bool XMidi::handleChunkTIMB(XMidiFile* xmidi, const unsigned char* stream, uint3
 //
 // Data in the EVNT chunk is as follow:
 //  EVNT<len>
-//    { UBYTE interval count (if < 128) 
+//    { UBYTE interval count (if < 128)
 //      UBYTE <MIDI event> (if > 127) } ...
 //
 // <MIDI event> consists of any MIDI Channel Voice, System Exclusive,

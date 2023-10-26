@@ -31,7 +31,7 @@
 #include <string>
 #include <vector>
 #include "mapobject.h"
-#include "sound/sound.h"
+#include "fs-engine/sound/sound.h"
 #include "fs-utils/io/configfile.h"
 #include "fs-utils/misc/timer.h"
 

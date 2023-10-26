@@ -63,12 +63,12 @@ set (SOURCES
 	pedactions.cpp
 	pedmanager.cpp
 	pedpathfinding.cpp
-	sound/audio.cpp
-	sound/musicmanager.cpp
-	sound/sdlmixermusic.cpp
-	sound/sdlmixersound.cpp
-	sound/soundmanager.cpp
-	sound/xmidi.cpp
+#	sound/audio.cpp
+#	sound/musicmanager.cpp
+#	sound/sdlmixermusic.cpp
+#	sound/sdlmixersound.cpp
+#	sound/soundmanager.cpp
+#	sound/xmidi.cpp
 	system_sdl.cpp
 	weaponmanager.cpp
 )
@@ -84,7 +84,7 @@ set(HEADERS
 	agent.h
 	agentmanager.h
 	app.h
-	config.h
+#	config.h
     ipastim.h
 	keys.h
 	map.h
@@ -147,30 +147,30 @@ set(HEADERS
 	menus/selectmenu.h
 	menus/squadselection.h
 	menus/widget.h
-	sound/audio.h
-	sound/music.h
-	sound/musicmanager.h
-	sound/sdlmixermusic.h
-	sound/sdlmixersound.h
-	sound/sound.h
-	sound/soundmanager.h
-	sound/xmidi.h
+#	sound/audio.h
+#	sound/music.h
+#	sound/musicmanager.h
+#	sound/sdlmixermusic.h
+#	sound/sdlmixersound.h
+#	sound/sound.h
+#	sound/soundmanager.h
+#	sound/xmidi.h
 )
 
 #source_group(Sources REGULAR_EXPRESSION .*.cpp)
 #source_group(Headers REGULAR_EXPRESSION .*.h)
 source_group(Menus REGULAR_EXPRESSION menus/*)
-source_group(Utils REGULAR_EXPRESSION utils/*)
+#source_group(Utils REGULAR_EXPRESSION utils/*)
 source_group(Core REGULAR_EXPRESSION core/*)
 source_group(Gfx REGULAR_EXPRESSION gfx/*)
-source_group(Sound REGULAR_EXPRESSION sound/*)
+#source_group(Sound REGULAR_EXPRESSION sound/*)
 source_group(Model REGULAR_EXPRESSION model/*)
 source_group(Editor REGULAR_EXPRESSION editor/*)
 source_group(IA REGULAR_EXPRESSION ia/*)
 
 add_executable (freesynd ${SOURCES} ${HEADERS})
 
-target_link_libraries (freesynd PRIVATE ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} Freesynd::Utils Freesynd::Engine)
+target_link_libraries (freesynd PRIVATE ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} Freesynd::Utils Freesynd::Engine)
 
 # Use -DBIN_DIR to override binary installation location
 if(NOT BIN_DIR)
@@ -198,12 +198,12 @@ if (BUILD_DEV_TOOLS)
 #		gfx/sprite.cpp
 #		gfx/spritemanager.cpp
 #		gfx/tilemanager.cpp
-		sound/audio.cpp
-		sound/musicmanager.cpp
-		sound/sdlmixermusic.cpp
-		sound/sdlmixersound.cpp
-		sound/soundmanager.cpp
-		sound/xmidi.cpp
+#		sound/audio.cpp
+#		sound/musicmanager.cpp
+#		sound/sdlmixermusic.cpp
+#		sound/sdlmixersound.cpp
+#		sound/soundmanager.cpp
+#		sound/xmidi.cpp
 		menus/menu.cpp
 		menus/menumanager.cpp
 		menus/widget.cpp
@@ -248,7 +248,7 @@ if (BUILD_DEV_TOOLS)
 		system_sdl.cpp
 		${DEV_TOOLS_HEADERS}
 	)
-	target_link_libraries (dump PRIVATE ${PNG_LIBRARIES} ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} Freesynd::Utils Freesynd::Engine)
+	target_link_libraries (dump PRIVATE ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} Freesynd::Utils Freesynd::Engine)
 
 	target_compile_definitions (dump PRIVATE EDITOR_)
 else ()

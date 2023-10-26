@@ -38,8 +38,8 @@
 #include "path.h"
 #include "menus/menumanager.h"
 #include "mapmanager.h"
-#include "sound/soundmanager.h"
-#include "sound/musicmanager.h"
+#include "fs-engine/sound/soundmanager.h"
+#include "fs-engine/sound/musicmanager.h"
 #include "appcontext.h"
 #include "core/gamecontroller.h"
 

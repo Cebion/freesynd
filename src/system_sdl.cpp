@@ -23,10 +23,10 @@
  *                                                                      *
  ************************************************************************/
 
-#include "config.h"
+#include "fs-engine/config.h"
 #include "fs-engine/gfx/screen.h"
 #include "system.h"
-#include "sound/audio.h"
+#include "fs-engine/sound/audio.h"
 #include "fs-utils/io/file.h"
 #include "fs-utils/log/log.h"
 

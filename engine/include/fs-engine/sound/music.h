@@ -24,82 +24,75 @@
  *                                                                      *
  ************************************************************************/
 
-#ifndef SOUND_H
-#define SOUND_H
+#ifndef MUSIC_H
+#define MUSIC_H
 
+#include "fs-engine/config.h"
 #include "fs-utils/common.h"
-#include "config.h"
 
-namespace snd {
-    /*!
-     * These enum values match the indices in the vector containing the samples
-     * so don't mess up the order in which they are in.
-     */
-    enum InGameSample {
-        SHOTGUN = 0,
-        PISTOL,
-        LASER,
-        FLAME,
-        FLAMING_DEATH,
-        GLASS_BREAKING,
-        EXPLOSION,
-        UZI,
-        LONGRANGE,
-        MINIGUN,
-        PERSUADE,
-        TRACKING_PONG,
-        SPEECH_SELECTED,
-        GAUSSGUN,
-        SPEECH_MISSION_COMPLETED,
-        SPEECH_MISSION_FAILED,
-        DOOR,
-        TIMEBOMB,
-        DOOR_2,
-        PUTDOWN_WEAPON,
-        MENU_UP = 20,
-        MENU_CHANGE,
-        FIREWORKS,
-        SPEECH_NO,
-        // mission failed, lamp-monitor impact
-        MONITOR_IMPACT,
-        // mission failed, lamp breaks
-        GLASS_BREAKING_2,
-        APPLAUSE,
-        APPLAUSE_ZOOM,
-        FIREWORKS_APPLAUSE,
-        EXPLOSION_BIG,
-        MENU_AFTER_MISSION,
-        FALLING_COMMAND_SHIP,
-        // mission failed, pressed button on chair
-        PRESS_BUTTON,
-        NO_SOUND = -1
+namespace msc {
+    enum MusicTrack {
+        TRACK_INTRO,
+        TRACK_ASSASSINATE,
+        TRACK_DANGER,
+        TRACK_GAME_COMPLETED,
+        TRACK_MISSION_FAILED,
+        TRACK_MISSION_COMPLETED,
+        NO_TRACK = -1
     };
-
-}
+};
 
 #ifdef HAVE_SDL_MIXER
 
 // Load the SDL_Mixer implementation
-#include "sound/sdlmixersound.h"
+#include "sdlmixermusic.h"
 
 // This macro is used to hide the implementation class
-#define Sound SdlMixerSound
+#define Music SdlMixerMusic
 
 #else
 
-//! Default implementation for the sound.
 /*!
- * This class is a dummy implementation. It does nothing.
+ * Dummy implementation of music.
  */
-class DefaultSound {
-public:
-    void play(int loops = 0) const {;}
-    void stop() const {;}
-    bool setVolume(int volume) { return true; }
-    bool loadSound(uint8 *soundData, uint32 size) { return true; }
+class DefaultMusic {
+  public:
+    //! Play the music
+    /*!
+     * \param loops = -1 means play forever
+     */
+      void play(int loops = -1) const {;}
+      //! Plays the music with a fade in.
+    /*!
+     * \param loops
+     * \param ms
+     */
+      void playFadeIn(int loops = -1, int ms = 200) const {;}
+      //! Stops the music
+    /*!
+     *
+     */
+      void stop() const {;}
+      //! Stops the music with a fade out.
+    /*!
+     * \param ms
+     */
+      void stopFadeOut(int ms = 200) const {;}
+      //! Loads the music from the given data.
+    /*!
+     * \param musicData
+     * \param size
+     */
+      bool loadMusic(uint8 *musicData, int size) { return true; }
+      //! Loads the music from the given file.
+    /*!
+     * \param fname
+     */
+      bool loadMusicFile(const char *fname) { return true;}
 };
 
-#define Sound DefaultSound
+#define Music DefaultMusic
 
 #endif  // HAVE_SDL_MIXER
-#endif  // SOUND_H
+
+#endif  // MUSIC_H

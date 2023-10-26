@@ -24,42 +24,82 @@
  *                                                                      *
  ************************************************************************/
 
-#ifndef MUSICMANAGER_H
-#define MUSICMANAGER_H
+#ifndef SOUND_H
+#define SOUND_H
 
 #include "fs-utils/common.h"
-#include "music.h"
+#include "fs-engine/config.h"
 
-#include <vector>
-
-/*!
- * Music manager class.
- */
-class MusicManager {
-public:
-    MusicManager(bool disabled);
-    ~MusicManager();
-
-    void loadMusic();
-    void playTrack(msc::MusicTrack track, int loops = -1);
-    void stopPlayback();
-    //! Sets the music volume to the given level
-    void setVolume(int volume);
-    //! Returns the current volume
-    int getVolume();
-    //! Mute / unmute the music
-    void toggleMusic();
-
-protected:
-    std::vector<Music *> tracks_;
-    msc::MusicTrack current_track_;
-    bool is_playing_;
+namespace snd {
     /*!
-     * Saves the volume level before a mute so
-     * we can restore it after a unmute.
+     * These enum values match the indices in the vector containing the samples
+     * so don't mess up the order in which they are in.
      */
-    int volumeBeforeMute_;
-    bool disabled_;
+    enum InGameSample {
+        SHOTGUN = 0,
+        PISTOL,
+        LASER,
+        FLAME,
+        FLAMING_DEATH,
+        GLASS_BREAKING,
+        EXPLOSION,
+        UZI,
+        LONGRANGE,
+        MINIGUN,
+        PERSUADE,
+        TRACKING_PONG,
+        SPEECH_SELECTED,
+        GAUSSGUN,
+        SPEECH_MISSION_COMPLETED,
+        SPEECH_MISSION_FAILED,
+        DOOR,
+        TIMEBOMB,
+        DOOR_2,
+        PUTDOWN_WEAPON,
+        MENU_UP = 20,
+        MENU_CHANGE,
+        FIREWORKS,
+        SPEECH_NO,
+        // mission failed, lamp-monitor impact
+        MONITOR_IMPACT,
+        // mission failed, lamp breaks
+        GLASS_BREAKING_2,
+        APPLAUSE,
+        APPLAUSE_ZOOM,
+        FIREWORKS_APPLAUSE,
+        EXPLOSION_BIG,
+        MENU_AFTER_MISSION,
+        FALLING_COMMAND_SHIP,
+        // mission failed, pressed button on chair
+        PRESS_BUTTON,
+        NO_SOUND = -1
+    };
+
+}
+
+#ifdef HAVE_SDL_MIXER
+
+// Load the SDL_Mixer implementation
+#include "fs-engine/sound/sdlmixersound.h"
+
+// This macro is used to hide the implementation class
+#define Sound SdlMixerSound
+
+#else
+
+//! Default implementation for the sound.
+/*!
+ * This class is a dummy implementation. It does nothing.
+ */
+class DefaultSound {
+public:
+    void play(int loops = 0) const {;}
+    void stop() const {;}
+    bool setVolume(int volume) { return true; }
+    bool loadSound(uint8 *soundData, uint32 size) { return true; }
 };
 
-#endif
+#define Sound DefaultSound
+
+#endif  // HAVE_SDL_MIXER
+#endif  // SOUND_H
