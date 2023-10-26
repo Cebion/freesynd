@@ -42,7 +42,7 @@
 
 #include "fs-utils/common.h"
 #include "system.h"
-#include "gfx/screen.h"
+#include "fs-engine/gfx/screen.h"
 #include "path.h"
 #include "menus/menumanager.h"
 #include "mapmanager.h"

@@ -46,8 +46,7 @@
 #undef ChunkHeader
 #endif
 
-#include "gfx/spritemanager.h"
-#include "gfx/screen.h"
+#include "fs-engine/gfx/spritemanager.h"
 #include "sound/audio.h"
 #include "fs-utils/io/file.h"
 #include "fs-utils/log/log.h"

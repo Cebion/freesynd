@@ -25,9 +25,10 @@
  *                                                                      *
  ************************************************************************/
 
+#include "fs-engine/gfx/fontmanager.h"
+
 #include <stdio.h>
 #include <assert.h>
-#include "fontmanager.h"
 
 FontManager::FontManager()
 {

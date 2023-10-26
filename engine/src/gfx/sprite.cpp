@@ -23,11 +23,13 @@
  *                                                                      *
  ************************************************************************/
 
+#include "fs-engine/gfx/sprite.h"
+
 #include <assert.h>
-#include "screen.h"
-#include "sprite.h"
 #include <stdio.h>
 #include <png.h>
+
+#include "fs-engine/gfx/screen.h"
 
 void unpackBlocks1(const uint8 * data, uint8 * pixels)
 {
@@ -136,7 +138,7 @@ void Sprite::loadSpriteFromPNG(const char *filename)
     }
 
     png_destroy_read_struct(&png_ptr, &info_ptr, 0);
-    
+
     fclose(fp);
 }
 

@@ -24,7 +24,7 @@
 #include "menus/flimenu.h"
 #include "menus/gamemenuid.h"
 #include "fs-utils/io/file.h"
-#include "gfx/screen.h"
+#include "fs-engine/gfx/screen.h"
 
 const FrameEvent intro[] = {
     { 1,  msc::TRACK_INTRO, snd::NO_SOUND, 0x0, NULL }, // Play track

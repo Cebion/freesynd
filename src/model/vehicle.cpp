@@ -25,6 +25,8 @@
  *                                                                      *
  ************************************************************************/
 
+#include "vehicle.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
@@ -32,8 +34,7 @@
 #include "app.h"
 #include "mission.h"
 #include "core/gamesession.h"
-#include "gfx/screen.h"
-#include "vehicle.h"
+#include "fs-engine/gfx/screen.h"
 #include "model/shot.h"
 
 const uint8 Vehicle::kVehicleTypeLargeArmored = 0x01;

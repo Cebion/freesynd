@@ -24,7 +24,7 @@
 #include "menus/minimaprenderer.h"
 #include "core/missionbriefing.h"
 #include "mission.h"
-#include "gfx/screen.h"
+#include "fs-engine/gfx/screen.h"
 #include "model/vehicle.h"
 #include "ped.h"
 

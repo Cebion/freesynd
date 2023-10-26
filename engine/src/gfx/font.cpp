@@ -23,12 +23,13 @@
  *                                                                      *
  ************************************************************************/
 
-#include "font.h"
-#include "screen.h"
-#include "cp437.h"
-#include "fs-utils/io/file.h"
+#include "fs-engine/gfx/font.h"
 
 #include <stdlib.h>
+
+#include "fs-engine/gfx/screen.h"
+#include "fs-engine/gfx/cp437.h"
+#include "fs-utils/io/file.h"
 
 FontRange::FontRange()
 {

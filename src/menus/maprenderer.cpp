@@ -31,8 +31,8 @@
 #include "mapobject.h"
 #include "model/vehicle.h"
 #include "model/squad.h"
-#include "gfx/screen.h"
-#include "gfx/tile.h"
+#include "fs-engine/gfx/screen.h"
+#include "fs-engine/gfx/tile.h"
 #include "system.h"
 #include "menus/squadselection.h"
 

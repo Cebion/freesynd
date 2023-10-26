@@ -22,10 +22,11 @@
  *                                                                      *
  ************************************************************************/
 
+#include "fs-engine/gfx/spritemanager.h"
+
 #include <stdio.h>
 #include <assert.h>
 
-#include "gfx/spritemanager.h"
 #include "fs-utils/io/file.h"
 
 SpriteManager::SpriteManager():sprites_(NULL), sprite_count_(0)

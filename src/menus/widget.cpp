@@ -3,7 +3,7 @@
 #include "menus/widget.h"
 #include "menus/menu.h"
 #include "menus/menumanager.h"
-#include "gfx/screen.h"
+#include "fs-engine/gfx/screen.h"
 #include "fs-utils/io/utf8.h"
 #include "appcontext.h"
 

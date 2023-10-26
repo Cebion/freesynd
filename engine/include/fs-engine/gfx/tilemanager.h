@@ -5,8 +5,6 @@
  *   Copyright (C) 2005  Stuart Binge  <skbinge@gmail.com>              *
  *   Copyright (C) 2005  Joost Peters  <joostp@users.sourceforge.net>   *
  *   Copyright (C) 2006  Trent Waddington <qg@biodome.org>              *
- *   Copyright (C) 2006  Tarjei Knapstad <tarjei.knapstad@gmail.com>    *
- *   Copyright (C) 2011  Joey Parrish  <joey.parrish@gmail.com>         *
  *                                                                      *
  *    This program is free software;  you can redistribute it and / or  *
  *  modify it  under the  terms of the  GNU General  Public License as  *
@@ -24,65 +22,37 @@
  *                                                                      *
  ************************************************************************/
 
-#ifndef FONTMANAGER_H
-#define FONTMANAGER_H
+#ifndef TILEMANAGER_H
+#define TILEMANAGER_H
 
 #include "fs-utils/common.h"
-#include "font.h"
-
-class SpriteManager;
+#include "fs-engine/gfx/tile.h"
 
 /*!
- * Manager for all fonts used in the application.
+ * Tile manager loads and holds all the game tiles.
  */
-class FontManager {
+class TileManager {
 public:
-    /*! Size of font : 1 is the smaller.*/
-    enum EFontSize {
-        SIZE_1 = 0,
-        SIZE_2 = 1,
-        SIZE_3 = 2,
-        SIZE_4 = 3
-    };
+    /*! The total number of tiles.*/
+    static const int kNumOfTiles;
 
-    FontManager();
-    ~FontManager();
+    TileManager();
+    ~TileManager();
+    //! Loads tiles from the file
+    bool loadTiles();
 
-    //! Creates all fonts
-    bool loadFonts(SpriteManager *pMenuSprites, SpriteManager *pIntroFontSprites_);
-
-    /*!
-     * Returns the font used in menus.
-     * \param size Size of the font
-     */
-    MenuFont * getMenuFont(FontManager::EFontSize size) { return menuFonts_[size]; }
-
-    /*!
-     * Returns the font used in the gameplay menu.
-     */
-    GameFont *gameFont() {
-        return pGameFont_;
-    }
-
-    /*!
-     * Returns the font used in the intro animation.
-     */
-    Font * introFont() {
-        return pIntroFont_;
-    }
+    //! Returns tile with the given index
+    Tile * getTile(uint8 index);
 
 protected:
-    //! Create a menu font for the given size
-    MenuFont * createMenuFontForSize(SpriteManager *sprites, EFontSize size, int darkOffset, int lightOffset,
-            char base, const std::string& valid_chars);
+    //! Load a given tile
+    Tile * loadTile(uint8 *tileData, uint8 id, Tile::EType type);
+    //! Returns the good enum for the given data
+    Tile::EType toTileType(uint8 data);
 
 protected:
-    /*!
-     * Menu fonts have different sizes.
-     */
-    MenuFont * menuFonts_[4];
-    GameFont *pGameFont_;
-    Font *pIntroFont_;
+    //! All the tiles in the game
+    Tile **a_tiles_;
 };
 
 #endif

@@ -27,7 +27,7 @@
 #include <list>
 
 #include "keys.h"
-#include "gfx/fontmanager.h"
+#include "fs-engine/gfx/fontmanager.h"
 #include "fs-utils/misc/seqmodel.h"
 
 class Menu;

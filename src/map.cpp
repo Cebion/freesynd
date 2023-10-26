@@ -23,15 +23,16 @@
  *                                                                      *
  ************************************************************************/
 
+#include "map.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
-#include "map.h"
 #include "fs-utils/log/log.h"
-#include "gfx/tilemanager.h"
-#include "gfx/screen.h"
+#include "fs-engine/gfx/tilemanager.h"
+#include "fs-engine/gfx/screen.h"
 
 Map::Map(TileManager * tileManager, uint16 anId) : tile_manager_(tileManager)
 {

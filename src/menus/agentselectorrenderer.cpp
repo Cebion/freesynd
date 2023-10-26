@@ -21,7 +21,7 @@
  ************************************************************************/
 
 #include "menus/agentselectorrenderer.h"
-#include "gfx/screen.h"
+#include "fs-engine/gfx/screen.h"
 #include "app.h"
 #include "ped.h"
 
@@ -99,7 +99,7 @@ void AgentSelectorRenderer::drawIPABar(int agent, IPAStim *stim)
     int dependency_x = (float)kIpaBarWidth * ((float)stim->getDependency()/100.0);
 
     IPAStim::IPAType type = stim->getType();
-    
+
     // Draw a bar between the current level and the dependency marker
     // x needs to be leftmost...
     int left, width;
@@ -109,7 +109,7 @@ void AgentSelectorRenderer::drawIPABar(int agent, IPAStim *stim)
                           getIpaBarTop(agent, type),
                           width, kIpaBarHeight, colourForIpaType(type));
     }
-    
+
     // NB: this bar stops rendering when it's neck-a-neck with 'amount'
     if(amount_x != effect_x)
     {
@@ -120,7 +120,7 @@ void AgentSelectorRenderer::drawIPABar(int agent, IPAStim *stim)
                               width, kIpaBarHeight, dim_colour(type));
         }
     }
-    
+
     // Draw a vertical white line to mark the dependency level
     g_Screen.drawVLine(getIpaBarLeftForAgent(agent) + dependency_x,
                       getIpaBarTop(agent, type), kIpaBarHeight, 12);

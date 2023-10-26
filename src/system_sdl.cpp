@@ -24,7 +24,7 @@
  ************************************************************************/
 
 #include "config.h"
-#include "gfx/screen.h"
+#include "fs-engine/gfx/screen.h"
 #include "system.h"
 #include "sound/audio.h"
 #include "fs-utils/io/file.h"

@@ -25,7 +25,7 @@
 #include <cstdio>
 
 #include "fliplayer.h"
-#include "screen.h"
+#include "fs-engine/gfx/screen.h"
 #include "fs-utils/log/log.h"
 #include "menus/menumanager.h"
 

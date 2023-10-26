@@ -28,7 +28,7 @@
 #include "mission.h"
 #include "ped.h"
 #include "pathsurfaces.h"
-#include "gfx/tile.h"
+#include "fs-engine/gfx/tile.h"
 #include "fs-utils/log/log.h"
 
 #if 0

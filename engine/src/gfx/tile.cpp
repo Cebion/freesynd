@@ -22,12 +22,13 @@
  *                                                                      *
  ************************************************************************/
 
+#include "fs-engine/gfx/tile.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
-#include "tile.h"
-#include "gfx/screen.h"
+#include "fs-engine/gfx/screen.h"
 
 
 Tile::Tile(uint8 id_set, uint8 *tile_Data, bool not_alpha, EType type_set)

@@ -26,18 +26,13 @@ set (SOURCES
 	core/researchmanager.cpp
 	ia/actions.cpp
 	ia/behaviour.cpp
-#	default_ini.h
 	freesynd.cpp
     ipastim.cpp
-#	gfx/dirtylist.cpp
 	gfx/fliplayer.cpp
-	gfx/font.cpp
-	gfx/fontmanager.cpp
-	gfx/screen.cpp
-	gfx/sprite.cpp
-	gfx/spritemanager.cpp
-	gfx/tile.cpp
-	gfx/tilemanager.cpp
+#	gfx/fontmanager.cpp
+#	gfx/sprite.cpp
+#	gfx/spritemanager.cpp
+#	gfx/tilemanager.cpp
 	map.cpp
 	mapobject.cpp
 	mapmanager.cpp
@@ -75,13 +70,6 @@ set (SOURCES
 	sound/soundmanager.cpp
 	sound/xmidi.cpp
 	system_sdl.cpp
-#	utils/configfile.cpp
-#	utils/ccrc32.cpp
-#	utils/dernc.cpp
-#	utils/file.cpp
-#	utils/log.cpp
-#	utils/portablefile.cpp
-#	utils/seqmodel.cpp
 	weaponmanager.cpp
 )
 
@@ -96,9 +84,7 @@ set(HEADERS
 	agent.h
 	agentmanager.h
 	app.h
-#	common.h
 	config.h
-	cp437.h
     ipastim.h
 	keys.h
 	map.h
@@ -115,7 +101,6 @@ set(HEADERS
 	resources.h
 	system.h
 	system_sdl.h
-#	version.h
 	weaponmanager.h
 	core/gameevent.h
 	core/gamesession.h
@@ -124,15 +109,11 @@ set(HEADERS
 	core/researchmanager.h
 	ia/actions.h
 	ia/behaviour.h
-#	gfx/dirtylist.h
 	gfx/fliplayer.h
-	gfx/font.h
-	gfx/fontmanager.h
-	gfx/screen.h
-	gfx/sprite.h
-	gfx/spritemanager.h
-	gfx/tile.h
-	gfx/tilemanager.h
+#	gfx/fontmanager.h
+#	gfx/sprite.h
+#	gfx/spritemanager.h
+#	gfx/tilemanager.h
 	model/mod.h
 	model/vehicle.h
 	model/weapon.h
@@ -174,19 +155,6 @@ set(HEADERS
 	sound/sound.h
 	sound/soundmanager.h
 	sound/xmidi.h
-#	utils/configfile.h
-#	utils/ccrc32.h
-#	utils/dernc.h
-#	utils/file.h
-#	utils/log.h
-#	utils/portablefile.h
-#	utils/seqmodel.h
-#	utils/singleton.h
-#	utils/timer.h
-#	utils/utf8.h
-#	utils/utf8/checked.h
-#	utils/utf8/core.h
-#	utils/utf8/unchecked.h
 )
 
 #source_group(Sources REGULAR_EXPRESSION .*.cpp)
@@ -202,7 +170,7 @@ source_group(IA REGULAR_EXPRESSION ia/*)
 
 add_executable (freesynd ${SOURCES} ${HEADERS})
 
-target_link_libraries (freesynd PRIVATE ${PNG_LIBRARIES} ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} Freesynd::Utils Freesynd::Engine)
+target_link_libraries (freesynd PRIVATE ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} Freesynd::Utils Freesynd::Engine)
 
 # Use -DBIN_DIR to override binary installation location
 if(NOT BIN_DIR)
@@ -225,15 +193,11 @@ if (BUILD_DEV_TOOLS)
 
 	add_executable (dump
 		dump.cpp
-	#	gfx/dirtylist.cpp
 		gfx/fliplayer.cpp
-		gfx/font.cpp
-		gfx/fontmanager.cpp
-		gfx/screen.cpp
-		gfx/sprite.cpp
-		gfx/spritemanager.cpp
-		gfx/tile.cpp
-		gfx/tilemanager.cpp
+#		gfx/fontmanager.cpp
+#		gfx/sprite.cpp
+#		gfx/spritemanager.cpp
+#		gfx/tilemanager.cpp
 		sound/audio.cpp
 		sound/musicmanager.cpp
 		sound/sdlmixermusic.cpp
@@ -273,13 +237,6 @@ if (BUILD_DEV_TOOLS)
 		ia/actions.cpp
 		ia/behaviour.cpp
 		mission.cpp
-#		utils/dernc.cpp
-#		utils/file.cpp
-#		utils/log.cpp
-#		utils/portablefile.cpp
-#		utils/configfile.cpp
-#		utils/ccrc32.cpp
-#		utils/seqmodel.cpp
 		editor/editorapp.cpp
 		editor/editormenufactory.cpp
 		editor/logoutmenu.cpp

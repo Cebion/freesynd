@@ -31,7 +31,7 @@
 #include <string>
 
 #include "mission.h"
-#include "gfx/screen.h"
+#include "fs-engine/gfx/screen.h"
 #include "app.h"
 #include "model/objectivedesc.h"
 #include "fs-utils/log/log.h"

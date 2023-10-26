@@ -34,7 +34,7 @@
 #include "fs-utils/io/file.h"
 #include "fs-utils/log/log.h"
 #include "gfx/fliplayer.h"
-#include "gfx/screen.h"
+#include "fs-engine/gfx/screen.h"
 #include "sound/soundmanager.h"
 
 MenuManager::MenuManager(MenuFactory *pFactory, SoundManager *pGameSounds):

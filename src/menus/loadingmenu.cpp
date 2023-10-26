@@ -28,7 +28,7 @@
 #include <assert.h>
 
 #include "loadingmenu.h"
-#include "gfx/screen.h"
+#include "fs-engine/gfx/screen.h"
 #include "mission.h"
 #include "core/gamecontroller.h"
 #include "core/gamesession.h"

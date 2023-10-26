@@ -32,14 +32,14 @@
 #include "menus/menumanager.h"
 #include "appcontext.h"
 #include "gfx/fliplayer.h"
-#include "gfx/screen.h"
+#include "fs-engine/gfx/screen.h"
 
 const int Menu::MENU_NO_MENU = -1;
 const int Menu::kMenuIdLogout = 6;
 const int Menu::kMouseLeftButton = 1;
 const int Menu::kMouseRightButton = 3;
 
-Menu::Menu(MenuManager * menuManager, int id, int parentId, 
+Menu::Menu(MenuManager * menuManager, int id, int parentId,
     const char *showAnim, const char *leaveAnim) :
     showAnim_(showAnim), leaveAnim_(leaveAnim)
 {
@@ -105,7 +105,7 @@ void Menu::render(DirtyList &dirtyList)
 }
 
 /*!
- * This method does some common actions before given handle to the 
+ * This method does some common actions before given handle to the
  * current menu instance via handleLeave().
  */
 void Menu::leave() {
@@ -182,7 +182,7 @@ int Menu::addStatic(int x, int y, int width, const char *text, FontManager::EFon
  */
 int Menu::addOption(int x, int y, int width, int height, const char *text, FontManager::EFontSize size,
             int to, bool visible, bool centered, int dark_widget, int light_widget) {
-    
+
     Option *pOption = new Option(this, x, y, width, height, text, getMenuFont(size), to, visible, centered, dark_widget, light_widget);
     actions_.push_back(pOption);
 
@@ -194,7 +194,7 @@ int Menu::addOption(int x, int y, int width, int height, const char *text, FontM
     return pOption->getId();
 }
 
-/*! 
+/*!
  * Creates a new button that has no text but an image.
  * Widget's size will be the same as the image used. Dark image
  * and light image should be the same size.
@@ -209,7 +209,7 @@ int Menu::addImageOption(int x, int y, int dark_widget, int light_widget, bool v
 
     Sprite *spr = menu_manager_->menuSprites().sprite(dark_widget);
 
-    Option *m = new Option(this, x, y, spr->width() * 2, spr->height() * 2, "", 
+    Option *m = new Option(this, x, y, spr->width() * 2, spr->height() * 2, "",
         getMenuFont(FontManager::SIZE_1), MENU_NO_MENU, visible, true, dark_widget, light_widget);
     actions_.push_back(m);
 
@@ -274,7 +274,7 @@ MenuText * Menu::getStatic(int staticId) {
     for (std::list < MenuText >::iterator it = statics_.begin();
          it != statics_.end(); it++) {
         MenuText & m = *it;
-        
+
         if (m.getId() == staticId) {
             return &m;
         }
@@ -409,7 +409,7 @@ void Menu::mouseMotionEvent(int x, int y, int state, const int modKeys)
     // Check focus is lost for currently focused widget
     if (focusedWgId_ != -1) {
         ActionWidget *pAction = getActionWidget(focusedWgId_);
-        
+
         if (!pAction->isMouseOver(x, y) || !pAction->isVisible()) {
             pAction->handleFocusLost();
             focusedWgId_ = -1;
@@ -486,8 +486,8 @@ void Menu::mouseUpEvent(int x, int y, int button, const int modKeys)
     handleMouseUp(x, y, button, modKeys);
 }
 
-MenuFont * Menu::getMenuFont(FontManager::EFontSize size) { 
-    return menu_manager_->fonts().getMenuFont(size); 
+MenuFont * Menu::getMenuFont(FontManager::EFontSize size) {
+    return menu_manager_->fonts().getMenuFont(size);
 }
 
 GameFont *Menu::gameFont() {

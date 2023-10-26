@@ -24,8 +24,9 @@
  *                                                                      *
  ************************************************************************/
 
+#include "fs-engine/gfx/screen.h"
+
 #include "fs-utils/common.h"
-#include "screen.h"
 #include "fs-utils/io/file.h"
 
 const int Screen::kScreenWidth = 640;

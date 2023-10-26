@@ -34,7 +34,7 @@
 #include "menus/gamemenuid.h"
 #include "core/gamecontroller.h"
 #include "core/gamesession.h"
-#include "gfx/screen.h"
+#include "fs-engine/gfx/screen.h"
 #include "system.h"
 #include "model/mod.h"
 

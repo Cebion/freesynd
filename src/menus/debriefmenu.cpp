@@ -34,7 +34,7 @@
 #include "core/gamecontroller.h"
 #include "core/gamesession.h"
 #include "system.h"
-#include "gfx/screen.h"
+#include "fs-engine/gfx/screen.h"
 
 DebriefMenu::DebriefMenu(MenuManager *m) : Menu(m, fs_game_menus::kMenuIdDebrief, fs_game_menus::kMenuIdMain, "mdebrief.dat",
      "mdeout.dat") {

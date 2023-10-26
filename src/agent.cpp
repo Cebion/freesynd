@@ -24,12 +24,13 @@
  *                                                                      *
  ************************************************************************/
 
+#include "agent.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
-#include "gfx/screen.h"
-#include "agent.h"
+#include "fs-engine/gfx/screen.h"
 
 int Agent::agentCnt = 1;
 

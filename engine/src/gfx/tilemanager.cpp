@@ -22,11 +22,11 @@
  *                                                                      *
  ************************************************************************/
 
+#include "fs-engine/gfx/tilemanager.h"
+
 #include <stdio.h>
 #include <assert.h>
 
-#include "tilemanager.h"
-#include "resources.h"
 #include "fs-utils/log/log.h"
 #include "fs-utils/io/file.h"
 
@@ -189,13 +189,14 @@ bool TileManager::loadTiles()
     uint8 *type_data;
 
     // first reads types
-    type_data = File::loadOriginalFile(TILE_TYPES, size);
+    //#define TILE_TYPES "col01.dat"
+    type_data = File::loadOriginalFile("col01.dat", size);
     if (!type_data) {
         return false;
     }
 
     // then reads tiles
-    uint8 *tileData = File::loadOriginalFile(TILE_SET, size);
+    uint8 *tileData = File::loadOriginalFile("hblk01.dat", size);
 
     if (!tileData) {
         FSERR(Log::k_FLG_IO, "TileManager", "loadTiles", ("Failed to load tiles data\n"));

@@ -29,7 +29,7 @@
 #include <map>
 #include "fs-utils/common.h"
 #include "map.h"
-#include "gfx/tilemanager.h"
+#include "fs-engine/gfx/tilemanager.h"
 
 /*!
  * Map manager class.

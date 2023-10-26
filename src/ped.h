@@ -34,7 +34,7 @@
 #include "fs-utils/common.h"
 #include "mapobject.h"
 #include "modowner.h"
-#include "gfx/spritemanager.h"
+#include "fs-engine/gfx/spritemanager.h"
 #include "model/weaponholder.h"
 #include "model/weapon.h"
 #include "ipastim.h"

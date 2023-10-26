@@ -28,7 +28,7 @@
 #include "editor/editorapp.h"
 #include "editor/searchmissionmenu.h"
 #include "editor/editormenuid.h"
-#include "gfx/screen.h"
+#include "fs-engine/gfx/screen.h"
 #include "system.h"
 #include "missionmanager.h"
 #include "mission.h"

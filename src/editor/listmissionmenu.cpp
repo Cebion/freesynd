@@ -28,7 +28,7 @@
 #include "editor/listmissionmenu.h"
 #include "editor/editormenuid.h"
 #include "editor/editorapp.h"
-#include "gfx/screen.h"
+#include "fs-engine/gfx/screen.h"
 #include "system.h"
 
 ListMissionMenu::ListMissionMenu(MenuManager * m):

@@ -69,11 +69,6 @@ if (NOT SDLMIXER_FOUND)
 	message (FATAL_ERROR "Unable to locate SDL_mixer")
 endif ()
 
-find_package (PNG)
-if (NOT PNG_FOUND)
-	message (FATAL_ERROR "Unable to locate PNG")
-endif ()
-
 if (NOT CMAKE_BUILD_TYPE)
     set (CMAKE_BUILD_TYPE "debug")
 endif ()

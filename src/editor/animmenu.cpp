@@ -26,7 +26,7 @@
 #include "editor/animmenu.h"
 #include "menus/menumanager.h"
 #include "editor/editormenuid.h"
-#include "gfx/screen.h"
+#include "fs-engine/gfx/screen.h"
 #include "system.h"
 #include "editor/editorapp.h"
 

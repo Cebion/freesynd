@@ -31,7 +31,7 @@
 #include "menus/mapmenu.h"
 #include "menus/gamemenuid.h"
 #include "core/gamesession.h"
-#include "gfx/screen.h"
+#include "fs-engine/gfx/screen.h"
 #include "system.h"
 #include "menus/menumanager.h"
 
