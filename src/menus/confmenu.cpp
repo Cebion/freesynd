@@ -35,7 +35,7 @@
 #include "core/gamecontroller.h"
 #include "core/gamesession.h"
 #include "fs-engine/gfx/screen.h"
-#include "system.h"
+#include "fs-engine/system.h"
 
 #define NAME_MAX_SIZE 16
 #define MAX_COLOUR 8

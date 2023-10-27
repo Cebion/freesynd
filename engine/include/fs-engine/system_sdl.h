@@ -28,7 +28,7 @@
 
 #include <SDL.h>
 
-#include "keys.h"
+#include "fs-engine/io/keys.h"
 
 //! Implementation of the System interface for SDL.
 /*!
@@ -36,7 +36,7 @@
  *  - Mouse Cursor\n
  *    In order to display colorfull cursors, the SDL cursor display is disabled
  *    and is manually managed by this class.\n
- *    A surface is loaded with a collection of sprites, and every time the 
+ *    A surface is loaded with a collection of sprites, and every time the
  *    mouse moves, the corresponding sprite is blit on screen at the
  *    mouse coordinates.\n
  *    If the SDLSystem fails to load the cursor surface, the default SDL cursor
@@ -99,7 +99,7 @@ protected:
 
     SDL_Surface *screen_surf_;
     SDL_Surface *temp_surf_;
-    /*! 
+    /*!
      * A surface that holds all cursors
      * images.
      */

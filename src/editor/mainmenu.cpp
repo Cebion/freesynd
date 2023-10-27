@@ -28,7 +28,7 @@
 #include "editor/mainmenu.h"
 #include "editor/editormenuid.h"
 #include "fs-engine/gfx/screen.h"
-#include "system.h"
+#include "fs-engine/system.h"
 
 MainMenu::MainMenu(MenuManager * m):Menu(m, fs_edit_menus::kMenuIdMain, fs_edit_menus::kMenuIdMain, "mscrenup.dat", "")
 {

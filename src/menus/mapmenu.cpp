@@ -32,7 +32,7 @@
 #include "menus/gamemenuid.h"
 #include "core/gamesession.h"
 #include "fs-engine/gfx/screen.h"
-#include "system.h"
+#include "fs-engine/system.h"
 #include "menus/menumanager.h"
 
 struct pos {

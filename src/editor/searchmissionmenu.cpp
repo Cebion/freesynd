@@ -29,7 +29,7 @@
 #include "editor/searchmissionmenu.h"
 #include "editor/editormenuid.h"
 #include "fs-engine/gfx/screen.h"
-#include "system.h"
+#include "fs-engine/system.h"
 #include "missionmanager.h"
 #include "mission.h"
 #include "model/vehicle.h"

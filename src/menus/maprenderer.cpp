@@ -33,7 +33,7 @@
 #include "model/squad.h"
 #include "fs-engine/gfx/screen.h"
 #include "fs-engine/gfx/tile.h"
-#include "system.h"
+#include "fs-engine/system.h"
 #include "menus/squadselection.h"
 
 void MapRenderer::init(Mission *pMission, SquadSelection *pSelection) {

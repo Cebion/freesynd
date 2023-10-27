@@ -29,7 +29,7 @@
 #include "editor/editormenuid.h"
 #include "editor/editorapp.h"
 #include "fs-engine/gfx/screen.h"
-#include "system.h"
+#include "fs-engine/system.h"
 
 ListMissionMenu::ListMissionMenu(MenuManager * m):
     Menu(m, fs_edit_menus::kMenuIdListMis, fs_edit_menus::kMenuIdSrchMis, "mscrenup.dat", "")

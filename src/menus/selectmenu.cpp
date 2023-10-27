@@ -35,7 +35,7 @@
 #include "core/gamecontroller.h"
 #include "core/gamesession.h"
 #include "fs-engine/gfx/screen.h"
-#include "system.h"
+#include "fs-engine/system.h"
 #include "model/mod.h"
 
 SelectMenu::SelectMenu(MenuManager * m):Menu(m, fs_game_menus::kMenuIdSelect, fs_game_menus::kMenuIdBrief, "mselect.dat",

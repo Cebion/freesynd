@@ -53,16 +53,7 @@ endif(NOT DATA_DIR)
 add_definitions (-DSYSTEM_SDL)
 add_definitions (-DPREFIX=\"${DATA_DIR}\")
 
-# Locate libs we depend on directly.
-find_package (SDL)
-if (NOT SDL_FOUND)
-	message (FATAL_ERROR "Unable to locate SDL")
-endif ()
 
-find_package (SDL_image)
-if (NOT SDLIMAGE_FOUND)
-	message (FATAL_ERROR "Unable to locate SDL_image")
-endif ()
 
 if (NOT CMAKE_BUILD_TYPE)
     set (CMAKE_BUILD_TYPE "debug")
@@ -80,7 +71,7 @@ else ()
 endif ()
 
 # Make sure we can include from the libs we found.
-include_directories (${PNG_INCLUDE_DIR} ${SDL_INCLUDE_DIR} ${SDLIMAGE_INCLUDE_DIR} ${SDLMIXER_INCLUDE_DIR})
+# include_directories (${PNG_INCLUDE_DIR} ${SDL_INCLUDE_DIR} ${SDLIMAGE_INCLUDE_DIR} ${SDLMIXER_INCLUDE_DIR})
 
 # Build the sources in this subdirectory.
 add_subdirectory(utils)

@@ -27,7 +27,7 @@
 #include "menus/menumanager.h"
 #include "editor/editormenuid.h"
 #include "fs-engine/gfx/screen.h"
-#include "system.h"
+#include "fs-engine/system.h"
 #include "editor/editorapp.h"
 
 AnimMenu::AnimMenu(MenuManager * m):

@@ -69,7 +69,7 @@ set (SOURCES
 #	sound/sdlmixersound.cpp
 #	sound/soundmanager.cpp
 #	sound/xmidi.cpp
-	system_sdl.cpp
+#	system_sdl.cpp
 	weaponmanager.cpp
 )
 
@@ -86,7 +86,7 @@ set(HEADERS
 	app.h
 #	config.h
     ipastim.h
-	keys.h
+#	keys.h
 	map.h
 	mapmanager.h
 	mapobject.h
@@ -99,8 +99,8 @@ set(HEADERS
 	ped.h
 	pedmanager.h
 	resources.h
-	system.h
-	system_sdl.h
+#	system.h
+#	system_sdl.h
 	weaponmanager.h
 	core/gameevent.h
 	core/gamesession.h
@@ -170,7 +170,7 @@ source_group(IA REGULAR_EXPRESSION ia/*)
 
 add_executable (freesynd ${SOURCES} ${HEADERS})
 
-target_link_libraries (freesynd PRIVATE ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} Freesynd::Utils Freesynd::Engine)
+target_link_libraries (freesynd PRIVATE Freesynd::Utils Freesynd::Engine)
 
 # Use -DBIN_DIR to override binary installation location
 if(NOT BIN_DIR)
@@ -245,7 +245,7 @@ if (BUILD_DEV_TOOLS)
 		editor/animmenu.cpp
 		editor/searchmissionmenu.cpp
 		editor/listmissionmenu.cpp
-		system_sdl.cpp
+	#	system_sdl.cpp
 		${DEV_TOOLS_HEADERS}
 	)
 	target_link_libraries (dump PRIVATE ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} Freesynd::Utils Freesynd::Engine)

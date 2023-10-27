@@ -26,7 +26,7 @@
 #include <string>
 #include <list>
 
-#include "keys.h"
+#include "fs-engine/io/keys.h"
 #include "fs-engine/gfx/fontmanager.h"
 #include "fs-utils/misc/seqmodel.h"
 
