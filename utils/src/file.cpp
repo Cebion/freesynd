@@ -34,6 +34,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <io.h>
 #else
 #include <dirent.h>
 #include <sys/stat.h>
@@ -52,10 +53,10 @@ std::string File::ourDataPath_ = "./data/";
 std::string File::homePath_ = "./";
 
 #ifdef _WIN32
-static string exeFolder() {
+static std::string exeFolder() {
     char buf[1024];
     GetModuleFileName(NULL, buf, 1024);
-    string tmp(buf);
+    std::string tmp(buf);
     size_t pos = tmp.find_last_of('\\');
     if (pos != std::string::npos) tmp.erase(pos + 1);
     else tmp = ".";

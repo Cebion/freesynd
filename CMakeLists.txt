@@ -9,10 +9,10 @@ project(
 if (WIN32)
 	# Search the bundled libs directory when using MSVC.
 	set (CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH}
-		${CMAKE_SOURCE_DIR}/../libs/MSVC/lib
+		${CMAKE_SOURCE_DIR}/extern/MSVC/lib
 	)
 	set (CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH}
-		${CMAKE_SOURCE_DIR}/../libs/MSVC/include
+		${CMAKE_SOURCE_DIR}/extern/MSVC/include
 	)
 endif ()
 
