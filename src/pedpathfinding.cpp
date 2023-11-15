@@ -1796,7 +1796,12 @@ void PedInstance::createPath(Mission *m, floodPointDesc *mdpmirror, std::vector<
             np = false;
             ct = nt;
         }
-        pathToDestination.push_back(TilePoint(toadd.x, toadd.y, toadd.z));
+        // Conditional break before the push_back call
+        if (pathToDestination.size() > 1000) {  // Adjust the size limit as needed
+            std::cerr << "Warning: Path size limit exceeded, breaking out of loop." << std::endl;
+            break;        
+        }
+		pathToDestination.push_back(TilePoint(toadd.x, toadd.y, toadd.z));
         // this assert might save from memory fill up,
         assert(currentTile.tx != toadd.x || currentTile.ty != toadd.y || currentTile.tz != toadd.z);
 
