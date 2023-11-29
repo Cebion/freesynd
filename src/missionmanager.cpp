@@ -79,9 +79,6 @@ MissionBriefing *MissionManager::loadBriefing(int n) {
     char tmp[100];
     // Briefing file depends on the current language
     switch(g_Ctx.currLanguage()) {
-        case AppContext::ENGLISH:
-            sprintf(tmp, MISSION_PATTERN_EN, n);
-            break;
         case AppContext::FRENCH:
             sprintf(tmp, MISSION_PATTERN_FR, n);
             break;
@@ -90,6 +87,13 @@ MissionBriefing *MissionManager::loadBriefing(int n) {
             break;
         case AppContext::GERMAN:
             sprintf(tmp, MISSION_PATTERN_GE, n);
+            break;
+        case AppContext::SPANISH:
+            sprintf(tmp, MISSION_PATTERN_SP, n);
+            break;
+        case AppContext::ENGLISH:
+        default:
+            sprintf(tmp, MISSION_PATTERN_EN, n);
             break;
     }
     int size;

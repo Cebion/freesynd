@@ -31,6 +31,8 @@
 #define MISSION_PATTERN_IT "miss2%02d.dat"
 //! File for mission briefing in german
 #define MISSION_PATTERN_GE "miss3%02d.dat"
+//! File for mission briefing in spanish
+#define MISSION_PATTERN_SP "miss4%02d.dat"
 
 //! Mission content
 #define GAME_PATTERN "game%02d.dat"

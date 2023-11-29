@@ -44,7 +44,8 @@ public:
         ENGLISH = 0,
         FRENCH = 1,
         ITALIAN = 2,
-        GERMAN = 3
+        GERMAN = 3,
+        SPANISH = 4
     };
 
     AppContext();
