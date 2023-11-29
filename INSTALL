@@ -108,7 +108,7 @@ Here is a description of each of the config file parameters:
 - `play_intro`: (true/false) If true, the introduction will be played.
 - `freesynd_data_dir`: Path to the FreeSynd "data" directory. This parameter should have a sensible default. Only set this if you really need to.
 - `data_dir`: Path to the original Syndicate "DATA" directory. By default, this will be the same as `freesynd_data_dir`.
-- `language`: 0:english, 1:français, 2:italiano, 3:deutsch 
+- `language`: 0:english, 1:français, 2:italiano, 3:deutsch, 4 spanish 
 
 After launch, `play_intro` will be turned off automatically.
 

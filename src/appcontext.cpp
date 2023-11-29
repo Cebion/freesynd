@@ -121,6 +121,10 @@ bool AppContext::readLanguage(const ConfigFile& conf) {
             curr_language_ = AppContext::GERMAN;
             filename = "lang/german.lng";
             break;
+        case 4:
+            curr_language_ = AppContext::SPANISH;
+            filename = "lang/spanish.lng";
+            break;
         case 0: // 0 is english
         default:
             curr_language_ = AppContext::ENGLISH;
